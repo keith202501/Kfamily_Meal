@@ -174,6 +174,38 @@
         .heart-icon.favorited {
             fill: #FF4B8B;
         }
+        
+        /* Multi-criteria rating styles */
+        .rating-criteria {
+            margin-bottom: 1rem;
+        }
+        
+        .rating-criteria-title {
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+        
+        .criteria-star-rating {
+            display: inline-flex;
+            justify-content: flex-start;
+        }
+        
+        .criteria-star-rating label {
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            font-size: 24px;
+            color: #D1D5DB;
+        }
+        
+        .criteria-star-rating input:checked ~ label {
+            color: #FFD700;
+        }
+        
+        .criteria-star-rating label:hover,
+        .criteria-star-rating label:hover ~ label {
+            color: #FFD700;
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
@@ -192,7 +224,19 @@
             <form id="authForm">
                 <div class="mb-4" id="nameField" style="display: none;">
                     <label for="displayName" class="block mb-2 text-sm font-medium">Your Name</label>
-                    <input type="text" id="displayName" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                    <input type="text" id="displayName" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
+                </div>
+                
+                <div class="mb-4" id="roleField" style="display: none;">
+                    <label for="userRole" class="block mb-2 text-sm font-medium">Your Role</label>
+                    <select id="userRole" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                        <option value="" disabled selected>Select your role</option>
+                        <option value="Family Member">Family Member</option>
+                        <option value="Chef">Chef</option>
+                        <option value="Nutritionist">Nutritionist</option>
+                        <option value="Meal Planner">Meal Planner</option>
+                        <option value="Other">Other</option>
+                    </select>
                 </div>
                 
                 <div class="mb-4">
@@ -235,7 +279,10 @@
                 <p class="text-sm text-gray-600 dark:text-gray-400">Created by Keith Cho</p>
             </div>
             <div class="flex items-center space-x-2">
-                <span id="userDisplayName" class="text-sm font-medium"></span>
+                <div class="flex flex-col items-end">
+                    <span id="userDisplayName" class="text-sm font-medium"></span>
+                    <span id="userDisplayRole" class="text-xs text-gray-500 dark:text-gray-400"></span>
+                </div>
                 <button id="signOutBtn" class="text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-700">Sign Out</button>
             </div>
         </div>
@@ -370,23 +417,110 @@
                                 <label for="mealDate" class="block mb-2 text-sm font-medium">Date</label>
                                 <input type="date" id="mealDate" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
                             </div>
+                        </div>
+                        
+                        <!-- Advanced Rating Section -->
+                        <div class="mb-6 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <h3 class="text-lg font-medium mb-3">Meal Rating</h3>
                             
-                            <!-- Rating Section -->
-                            <div class="mb-4">
-                                <label class="block mb-2 text-sm font-medium">Rating</label>
-                                <div class="star-rating">
-                                    <input type="radio" id="star5" name="rating" value="5" />
-                                    <label for="star5" title="5 stars"></label>
-                                    <input type="radio" id="star4" name="rating" value="4" />
-                                    <label for="star4" title="4 stars"></label>
-                                    <input type="radio" id="star3" name="rating" value="3" />
-                                    <label for="star3" title="3 stars"></label>
-                                    <input type="radio" id="star2" name="rating" value="2" />
-                                    <label for="star2" title="2 stars"></label>
-                                    <input type="radio" id="star1" name="rating" value="1" />
-                                    <label for="star1" title="1 star"></label>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <!-- Taste Rating -->
+                                <div class="rating-criteria">
+                                    <div class="rating-criteria-title">Taste</div>
+                                    <div class="criteria-star-rating">
+                                        <input type="radio" id="taste-5" name="tasteRating" value="5" class="hidden peer" />
+                                        <label for="taste-5" class="cursor-pointer">★</label>
+                                        <input type="radio" id="taste-4" name="tasteRating" value="4" class="hidden peer" />
+                                        <label for="taste-4" class="cursor-pointer">★</label>
+                                        <input type="radio" id="taste-3" name="tasteRating" value="3" class="hidden peer" />
+                                        <label for="taste-3" class="cursor-pointer">★</label>
+                                        <input type="radio" id="taste-2" name="tasteRating" value="2" class="hidden peer" />
+                                        <label for="taste-2" class="cursor-pointer">★</label>
+                                        <input type="radio" id="taste-1" name="tasteRating" value="1" class="hidden peer" />
+                                        <label for="taste-1" class="cursor-pointer">★</label>
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1" id="tasteRatingText">Not rated</div>
                                 </div>
-                                <span id="ratingText" class="text-sm text-gray-500 dark:text-gray-400 ml-2">Not rated</span>
+                                
+                                <!-- Appearance/Outlook Rating -->
+                                <div class="rating-criteria">
+                                    <div class="rating-criteria-title">Appearance</div>
+                                    <div class="criteria-star-rating">
+                                        <input type="radio" id="appearance-5" name="appearanceRating" value="5" class="hidden peer" />
+                                        <label for="appearance-5" class="cursor-pointer">★</label>
+                                        <input type="radio" id="appearance-4" name="appearanceRating" value="4" class="hidden peer" />
+                                        <label for="appearance-4" class="cursor-pointer">★</label>
+                                        <input type="radio" id="appearance-3" name="appearanceRating" value="3" class="hidden peer" />
+                                        <label for="appearance-3" class="cursor-pointer">★</label>
+                                        <input type="radio" id="appearance-2" name="appearanceRating" value="2" class="hidden peer" />
+                                        <label for="appearance-2" class="cursor-pointer">★</label>
+                                        <input type="radio" id="appearance-1" name="appearanceRating" value="1" class="hidden peer" />
+                                        <label for="appearance-1" class="cursor-pointer">★</label>
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1" id="appearanceRatingText">Not rated</div>
+                                </div>
+                                
+                                <!-- Health Rating -->
+                                <div class="rating-criteria">
+                                    <div class="rating-criteria-title">Nutrition Value</div>
+                                    <div class="criteria-star-rating">
+                                        <input type="radio" id="health-5" name="healthRating" value="5" class="hidden peer" />
+                                        <label for="health-5" class="cursor-pointer">★</label>
+                                        <input type="radio" id="health-4" name="healthRating" value="4" class="hidden peer" />
+                                        <label for="health-4" class="cursor-pointer">★</label>
+                                        <input type="radio" id="health-3" name="healthRating" value="3" class="hidden peer" />
+                                        <label for="health-3" class="cursor-pointer">★</label>
+                                        <input type="radio" id="health-2" name="healthRating" value="2" class="hidden peer" />
+                                        <label for="health-2" class="cursor-pointer">★</label>
+                                        <input type="radio" id="health-1" name="healthRating" value="1" class="hidden peer" />
+                                        <label for="health-1" class="cursor-pointer">★</label>
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1" id="healthRatingText">Not rated</div>
+                                </div>
+                                
+                                <!-- Ease of Preparation Rating -->
+                                <div class="rating-criteria">
+                                    <div class="rating-criteria-title">Ease of Preparation</div>
+                                    <div class="criteria-star-rating">
+                                        <input type="radio" id="ease-5" name="easeRating" value="5" class="hidden peer" />
+                                        <label for="ease-5" class="cursor-pointer">★</label>
+                                        <input type="radio" id="ease-4" name="easeRating" value="4" class="hidden peer" />
+                                        <label for="ease-4" class="cursor-pointer">★</label>
+                                        <input type="radio" id="ease-3" name="easeRating" value="3" class="hidden peer" />
+                                        <label for="ease-3" class="cursor-pointer">★</label>
+                                        <input type="radio" id="ease-2" name="easeRating" value="2" class="hidden peer" />
+                                        <label for="ease-2" class="cursor-pointer">★</label>
+                                        <input type="radio" id="ease-1" name="easeRating" value="1" class="hidden peer" />
+                                        <label for="ease-1" class="cursor-pointer">★</label>
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1" id="easeRatingText">Not rated</div>
+                                </div>
+                                
+                                <!-- Cost Rating -->
+                                <div class="rating-criteria">
+                                    <div class="rating-criteria-title">Cost Effectiveness</div>
+                                    <div class="criteria-star-rating">
+                                        <input type="radio" id="cost-5" name="costRating" value="5" class="hidden peer" />
+                                        <label for="cost-5" class="cursor-pointer">★</label>
+                                        <input type="radio" id="cost-4" name="costRating" value="4" class="hidden peer" />
+                                        <label for="cost-4" class="cursor-pointer">★</label>
+                                        <input type="radio" id="cost-3" name="costRating" value="3" class="hidden peer" />
+                                        <label for="cost-3" class="cursor-pointer">★</label>
+                                        <input type="radio" id="cost-2" name="costRating" value="2" class="hidden peer" />
+                                        <label for="cost-2" class="cursor-pointer">★</label>
+                                        <input type="radio" id="cost-1" name="costRating" value="1" class="hidden peer" />
+                                        <label for="cost-1" class="cursor-pointer">★</label>
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1" id="costRatingText">Not rated</div>
+                                </div>
+                                
+                                <!-- Overall Rating (Calculated from the others) -->
+                                <div class="rating-criteria">
+                                    <div class="rating-criteria-title">Overall Rating</div>
+                                    <div class="text-lg font-bold text-yellow-500" id="overallRatingDisplay">★★★☆☆</div>
+                                    <div class="text-xs text-gray-500 mt-1" id="overallRatingText">Average of all ratings</div>
+                                    <input type="hidden" id="overallRating" name="overallRating" value="0">
+                                </div>
                             </div>
                         </div>
                         
@@ -525,7 +659,7 @@
                                     </div>
                                     
                                     <div class="mb-2">
-                                        <label for="filterRating" class="block mb-1 text-sm font-medium">Rating:</label>
+                                        <label for="filterRating" class="block mb-1 text-sm font-medium">Overall Rating:</label>
                                         <select id="filterRating" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                                             <option value="All">All Ratings</option>
                                             <option value="5">★★★★★ (5)</option>
@@ -611,9 +745,18 @@
                     
                     <div class="mt-6 grid grid-cols-1 gap-6">
                         <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg tablet-specific">
-                            <h3 class="text-lg font-medium mb-2">Meals by Rating</h3>
+                            <h3 class="text-lg font-medium mb-2">Overall Meal Ratings</h3>
                             <div class="h-60">
                                 <canvas id="ratingChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 grid grid-cols-1 gap-6">
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg tablet-specific">
+                            <h3 class="text-lg font-medium mb-2">Rating Categories Comparison</h3>
+                            <div class="h-60">
+                                <canvas id="ratingCriteriaChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -644,26 +787,84 @@
         </div>
     </div>
 
-    <!-- Rating Modal -->
+    <!-- Detail Rating Modal -->
     <div id="ratingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
             <h2 class="text-xl font-semibold mb-4 text-center">Rate this meal</h2>
             
             <div class="mb-4 text-center">
-                <h3 id="ratingMealName" class="text-lg font-medium mb-2"></h3>
-                <div class="rating-stars mb-4 flex justify-center text-3xl">
-                    <span data-rating="1" class="star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400">★</span>
-                    <span data-rating="2" class="star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400">★</span>
-                    <span data-rating="3" class="star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400">★</span>
-                    <span data-rating="4" class="star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400">★</span>
-                    <span data-rating="5" class="star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400">★</span>
+                <h3 id="ratingMealName" class="text-lg font-medium mb-3"></h3>
+                
+                <!-- Taste Rating -->
+                <div class="mb-4">
+                    <div class="text-sm font-medium mb-1">Taste</div>
+                    <div class="flex justify-center space-x-1">
+                        <span data-type="taste" data-rating="1" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="taste" data-rating="2" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="taste" data-rating="3" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="taste" data-rating="4" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="taste" data-rating="5" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                    </div>
                 </div>
-                <p id="ratingDescription" class="text-gray-600 dark:text-gray-400">Click to rate</p>
+                
+                <!-- Appearance Rating -->
+                <div class="mb-4">
+                    <div class="text-sm font-medium mb-1">Appearance</div>
+                    <div class="flex justify-center space-x-1">
+                        <span data-type="appearance" data-rating="1" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="appearance" data-rating="2" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="appearance" data-rating="3" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="appearance" data-rating="4" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="appearance" data-rating="5" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                    </div>
+                </div>
+                
+                <!-- Health Rating -->
+                <div class="mb-4">
+                    <div class="text-sm font-medium mb-1">Nutrition Value</div>
+                    <div class="flex justify-center space-x-1">
+                        <span data-type="health" data-rating="1" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="health" data-rating="2" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="health" data-rating="3" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="health" data-rating="4" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="health" data-rating="5" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                    </div>
+                </div>
+                
+                <!-- Ease Rating -->
+                <div class="mb-4">
+                    <div class="text-sm font-medium mb-1">Ease of Preparation</div>
+                    <div class="flex justify-center space-x-1">
+                        <span data-type="ease" data-rating="1" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="ease" data-rating="2" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="ease" data-rating="3" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="ease" data-rating="4" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="ease" data-rating="5" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                    </div>
+                </div>
+                
+                <!-- Cost Rating -->
+                <div class="mb-4">
+                    <div class="text-sm font-medium mb-1">Cost Effectiveness</div>
+                    <div class="flex justify-center space-x-1">
+                        <span data-type="cost" data-rating="1" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="cost" data-rating="2" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="cost" data-rating="3" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="cost" data-rating="4" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                        <span data-type="cost" data-rating="5" class="modal-star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400 text-2xl">★</span>
+                    </div>
+                </div>
+                
+                <!-- Overall Rating -->
+                <div class="mt-6">
+                    <div class="font-medium">Overall Rating</div>
+                    <div id="modalOverallRating" class="text-xl text-yellow-500">★★★★★</div>
+                </div>
             </div>
             
             <div class="flex justify-between">
                 <button id="ratingCancel" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-lg">Cancel</button>
-                <button id="ratingSave" class="px-4 py-2 theme-button-primary hover:bg-indigo-700 text-white rounded-lg disabled:opacity-50" disabled>Save Rating</button>
+                <button id="ratingSave" class="px-4 py-2 theme-button-primary hover:bg-indigo-700 text-white rounded-lg disabled:opacity-50">Save Rating</button>
             </div>
         </div>
     </div>
@@ -697,10 +898,12 @@
         const authSubmit = document.getElementById('authSubmit');
         const authToggle = document.getElementById('authToggle');
         const nameField = document.getElementById('nameField');
+        const roleField = document.getElementById('roleField');
         const authError = document.getElementById('authError');
         const appContent = document.getElementById('appContent');
         const signOutBtn = document.getElementById('signOutBtn');
         const userDisplayName = document.getElementById('userDisplayName');
+        const userDisplayRole = document.getElementById('userDisplayRole');
         const loadingIndicator = document.getElementById('loadingIndicator');
         const loadingText = document.getElementById('loadingText');
         const googleSignInBtn = document.getElementById('googleSignIn');
@@ -708,18 +911,38 @@
         const thankYouClose = document.getElementById('thankYouClose');
         
         // Rating variables and elements
-        const ratingInputs = document.querySelectorAll('input[name="rating"]');
-        const ratingText = document.getElementById('ratingText');
+        const tasteRatingInputs = document.querySelectorAll('input[name="tasteRating"]');
+        const appearanceRatingInputs = document.querySelectorAll('input[name="appearanceRating"]');
+        const healthRatingInputs = document.querySelectorAll('input[name="healthRating"]');
+        const easeRatingInputs = document.querySelectorAll('input[name="easeRating"]');
+        const costRatingInputs = document.querySelectorAll('input[name="costRating"]');
+        const overallRatingElement = document.getElementById('overallRatingDisplay');
+        const overallRatingText = document.getElementById('overallRatingText');
+        const tasteRatingText = document.getElementById('tasteRatingText');
+        const appearanceRatingText = document.getElementById('appearanceRatingText');
+        const healthRatingText = document.getElementById('healthRatingText');
+        const easeRatingText = document.getElementById('easeRatingText');
+        const costRatingText = document.getElementById('costRatingText');
+        const overallRatingInput = document.getElementById('overallRating');
+        
+        // Rating modal elements
         const ratingModal = document.getElementById('ratingModal');
         const ratingMealName = document.getElementById('ratingMealName');
-        const ratingStars = document.querySelectorAll('.rating-stars .star');
-        const ratingDescription = document.getElementById('ratingDescription');
+        const modalStars = document.querySelectorAll('.modal-star');
+        const modalOverallRating = document.getElementById('modalOverallRating');
         const ratingCancel = document.getElementById('ratingCancel');
         const ratingSave = document.getElementById('ratingSave');
         
         // Global variables
         let currentMealBeingRated = null;
-        let selectedRating = 0;
+        const ratingValues = {
+            taste: 0,
+            appearance: 0,
+            health: 0,
+            ease: 0,
+            cost: 0,
+            overall: 0
+        };
         
         // Thank you animation
         thankYouClose.addEventListener('click', function() {
@@ -754,11 +977,13 @@
                 authSubmit.textContent = 'Sign Up';
                 authToggle.textContent = 'Already have an account? Sign In';
                 nameField.style.display = 'block';
+                roleField.style.display = 'block';
             } else {
                 authTitle.textContent = 'Sign In';
                 authSubmit.textContent = 'Sign In';
                 authToggle.textContent = 'Create an account';
                 nameField.style.display = 'none';
+                roleField.style.display = 'none';
             }
             authError.classList.add('hidden');
         });
@@ -767,7 +992,24 @@
         googleSignInBtn.addEventListener('click', async () => {
             try {
                 const provider = new firebase.auth.GoogleAuthProvider();
-                await auth.signInWithPopup(provider);
+                const result = await auth.signInWithPopup(provider);
+                const user = result.user;
+                
+                // Check if it's a new user
+                if (result.additionalUserInfo.isNewUser) {
+                    // Prompt for role after successful sign-in
+                    const userRole = prompt("Please enter your role (Family Member, Chef, Nutritionist, etc.):", "Family Member");
+                    
+                    if (userRole) {
+                        // Update user profile with role
+                        await db.collection('users').doc(user.uid).set({
+                            displayName: user.displayName,
+                            email: user.email,
+                            role: userRole,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                }
             } catch (error) {
                 authError.textContent = error.message;
                 authError.classList.remove('hidden');
@@ -780,7 +1022,6 @@
             
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const displayName = document.getElementById('displayName').value;
             
             showLoading('Authenticating...');
             
@@ -788,12 +1029,28 @@
                 let userCredential;
                 
                 if (isSignUp) {
+                    // Get additional fields
+                    const displayName = document.getElementById('displayName').value;
+                    const userRole = document.getElementById('userRole').value;
+                    
+                    if (!displayName || !userRole) {
+                        throw new Error('Name and role are required for registration');
+                    }
+                    
                     // Create new user
                     userCredential = await auth.createUserWithEmailAndPassword(email, password);
                     
                     // Update profile with display name
                     await userCredential.user.updateProfile({
                         displayName: displayName
+                    });
+                    
+                    // Store additional user data in Firestore
+                    await db.collection('users').doc(userCredential.user.uid).set({
+                        displayName: displayName,
+                        email: email,
+                        role: userRole,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 } else {
                     // Sign in existing user
@@ -825,16 +1082,29 @@
                 authSubmit.textContent = 'Sign In';
                 authToggle.textContent = 'Create an account';
                 nameField.style.display = 'none';
+                roleField.style.display = 'none';
             } catch (error) {
                 console.error('Error signing out: ', error);
             }
         });
         
         // Auth state observer
-        auth.onAuthStateChanged(user => {
+        auth.onAuthStateChanged(async (user) => {
             if (user) {
                 // User is signed in
                 userDisplayName.textContent = user.displayName || user.email;
+                
+                // Fetch user data from Firestore to get role
+                try {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        userDisplayRole.textContent = userData.role || '';
+                    }
+                } catch (error) {
+                    console.error("Error fetching user data:", error);
+                }
+                
                 authModal.style.display = 'none';
                 appContent.style.display = 'block';
                 
@@ -979,18 +1249,60 @@
             else return (bytes / 1048576).toFixed(1) + ' MB';
         }
         
-        // Handle rating inputs in add/edit form
-        ratingInputs.forEach(input => {
-            input.addEventListener('change', function() {
-                updateRatingText(this.value);
+        // Set up advanced rating inputs in add/edit form
+        function setupRatingListeners() {
+            // Taste rating
+            tasteRatingInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    updateCriteriaRatingText('taste', this.value);
+                    updateOverallRating();
+                });
             });
-        });
+            
+            // Appearance rating
+            appearanceRatingInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    updateCriteriaRatingText('appearance', this.value);
+                    updateOverallRating();
+                });
+            });
+            
+            // Health rating
+            healthRatingInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    updateCriteriaRatingText('health', this.value);
+                    updateOverallRating();
+                });
+            });
+            
+            // Ease rating
+            easeRatingInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    updateCriteriaRatingText('ease', this.value);
+                    updateOverallRating();
+                });
+            });
+            
+            // Cost rating
+            costRatingInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    updateCriteriaRatingText('cost', this.value);
+                    updateOverallRating();
+                });
+            });
+        }
         
-        function updateRatingText(rating) {
+        // Setup the rating listeners
+        setupRatingListeners();
+        
+        // Update criteria rating text
+        function updateCriteriaRatingText(type, rating) {
             if (!rating) {
-                ratingText.textContent = 'Not rated';
+                document.getElementById(`${type}RatingText`).textContent = 'Not rated';
                 return;
             }
+            
+            ratingValues[type] = parseInt(rating);
             
             const descriptions = {
                 1: 'Poor',
@@ -1000,40 +1312,114 @@
                 5: 'Excellent'
             };
             
-            const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
-            ratingText.textContent = `${stars} (${descriptions[rating]})`;
+            document.getElementById(`${type}RatingText`).textContent = `${descriptions[rating]}`;
+        }
+        
+        // Update overall rating
+        function updateOverallRating() {
+            // Count how many ratings are set
+            let totalRatings = 0;
+            let ratingSum = 0;
+            
+            for (const key in ratingValues) {
+                if (key !== 'overall' && ratingValues[key] > 0) {
+                    totalRatings++;
+                    ratingSum += ratingValues[key];
+                }
+            }
+            
+            if (totalRatings === 0) {
+                overallRatingElement.textContent = 'Not Rated';
+                overallRatingText.textContent = 'No ratings set';
+                overallRatingInput.value = 0;
+                ratingValues.overall = 0;
+                return;
+            }
+            
+            // Calculate average
+            const average = Math.round(ratingSum / totalRatings);
+            ratingValues.overall = average;
+            overallRatingInput.value = average;
+            
+            // Update display
+            const stars = '★'.repeat(average) + '☆'.repeat(5 - average);
+            overallRatingElement.textContent = stars;
+            
+            const descriptions = {
+                1: 'Poor',
+                2: 'Fair',
+                3: 'Good',
+                4: 'Very Good',
+                5: 'Excellent'
+            };
+            
+            overallRatingText.textContent = descriptions[average];
         }
         
         // Rating modal functionality
-        ratingStars.forEach(star => {
-            star.addEventListener('click', function() {
-                const rating = parseInt(this.dataset.rating);
-                selectedRating = rating;
-                
-                // Update star colors
-                ratingStars.forEach((s, i) => {
-                    if (i < rating) {
-                        s.classList.add('text-yellow-400');
-                        s.classList.remove('text-gray-300', 'dark:text-gray-600');
-                    } else {
-                        s.classList.remove('text-yellow-400');
-                        s.classList.add('text-gray-300', 'dark:text-gray-600');
-                    }
+        function setupModalRatingListeners() {
+            modalStars.forEach(star => {
+                star.addEventListener('click', function() {
+                    const type = this.dataset.type;
+                    const rating = parseInt(this.dataset.rating);
+                    
+                    // Update the rating value
+                    ratingValues[type] = rating;
+                    
+                    // Update star UI for this rating type
+                    modalStars.forEach(s => {
+                        if (s.dataset.type === type) {
+                            const starRating = parseInt(s.dataset.rating);
+                            if (starRating <= rating) {
+                                s.classList.add('text-yellow-400');
+                                s.classList.remove('text-gray-300', 'dark:text-gray-600');
+                            } else {
+                                s.classList.remove('text-yellow-400');
+                                s.classList.add('text-gray-300', 'dark:text-gray-600');
+                            }
+                        }
+                    });
+                    
+                    // Calculate and update overall rating
+                    updateModalOverallRating();
                 });
-                
-                // Update description
-                const descriptions = {
-                    1: 'Poor',
-                    2: 'Fair',
-                    3: 'Good',
-                    4: 'Very Good',
-                    5: 'Excellent'
-                };
-                
-                ratingDescription.textContent = descriptions[rating];
-                ratingSave.disabled = false;
             });
-        });
+        }
+        
+        // Setup modal rating listeners
+        setupModalRatingListeners();
+        
+        // Calculate and update the modal overall rating
+        function updateModalOverallRating() {
+            // Count how many ratings are set
+            let totalRatings = 0;
+            let ratingSum = 0;
+            
+            for (const key in ratingValues) {
+                if (key !== 'overall' && ratingValues[key] > 0) {
+                    totalRatings++;
+                    ratingSum += ratingValues[key];
+                }
+            }
+            
+            if (totalRatings === 0) {
+                modalOverallRating.textContent = 'Not Rated';
+                ratingValues.overall = 0;
+                ratingSave.disabled = true;
+                return;
+            }
+            
+            // Calculate average
+            const average = Math.round(ratingSum / totalRatings);
+            ratingValues.overall = average;
+            
+            // Update display
+            const stars = '★'.repeat(average) + '☆'.repeat(5 - average);
+            modalOverallRating.textContent = stars;
+            
+            // Enable save button
+            ratingSave.disabled = false;
+        }
         
         // Cancel rating
         ratingCancel.addEventListener('click', function() {
@@ -1042,7 +1428,7 @@
         
         // Save rating
         ratingSave.addEventListener('click', async function() {
-            if (!currentMealBeingRated || !selectedRating) return;
+            if (!currentMealBeingRated) return;
             
             showLoading('Saving rating...');
             
@@ -1053,13 +1439,21 @@
                     .collection('meals')
                     .doc(currentMealBeingRated)
                     .update({
-                        rating: selectedRating,
+                        ratings: {
+                            taste: ratingValues.taste,
+                            appearance: ratingValues.appearance,
+                            health: ratingValues.health,
+                            ease: ratingValues.ease,
+                            cost: ratingValues.cost,
+                            overall: ratingValues.overall
+                        },
+                        rating: ratingValues.overall, // For backward compatibility
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 
                 // Log rating event
                 analytics.logEvent('rate_meal', {
-                    rating: selectedRating
+                    overall_rating: ratingValues.overall
                 });
                 
                 // Reload meals and close modal
@@ -1078,14 +1472,25 @@
         });
         
         // Open rating modal
-        function openRatingModal(mealId, mealName, currentRating = 0) {
+        function openRatingModal(mealId, mealName, currentRatings = {}) {
             currentMealBeingRated = mealId;
             ratingMealName.textContent = mealName;
-            selectedRating = currentRating;
             
-            // Reset star UI
-            ratingStars.forEach((star, i) => {
-                if (i < currentRating) {
+            // Reset all ratings
+            ratingValues.taste = currentRatings.taste || 0;
+            ratingValues.appearance = currentRatings.appearance || 0;
+            ratingValues.health = currentRatings.health || 0;
+            ratingValues.ease = currentRatings.ease || 0;
+            ratingValues.cost = currentRatings.cost || 0;
+            ratingValues.overall = currentRatings.overall || 0;
+            
+            // Update all star UI
+            modalStars.forEach(star => {
+                const type = star.dataset.type;
+                const rating = parseInt(star.dataset.rating);
+                const currentRating = ratingValues[type];
+                
+                if (rating <= currentRating) {
                     star.classList.add('text-yellow-400');
                     star.classList.remove('text-gray-300', 'dark:text-gray-600');
                 } else {
@@ -1094,19 +1499,13 @@
                 }
             });
             
-            // Set description
-            if (currentRating > 0) {
-                const descriptions = {
-                    1: 'Poor',
-                    2: 'Fair',
-                    3: 'Good',
-                    4: 'Very Good',
-                    5: 'Excellent'
-                };
-                ratingDescription.textContent = descriptions[currentRating];
+            // Update overall rating display
+            if (ratingValues.overall > 0) {
+                const stars = '★'.repeat(ratingValues.overall) + '☆'.repeat(5 - ratingValues.overall);
+                modalOverallRating.textContent = stars;
                 ratingSave.disabled = false;
             } else {
-                ratingDescription.textContent = 'Click to rate';
+                modalOverallRating.textContent = 'Not Rated';
                 ratingSave.disabled = true;
             }
             
@@ -1117,7 +1516,14 @@
         function closeRatingModal() {
             ratingModal.classList.add('hidden');
             currentMealBeingRated = null;
-            selectedRating = 0;
+            
+            // Reset all ratings
+            ratingValues.taste = 0;
+            ratingValues.appearance = 0;
+            ratingValues.health = 0;
+            ratingValues.ease = 0;
+            ratingValues.cost = 0;
+            ratingValues.overall = 0;
         }
 
         // Array to store fetched meals
@@ -1148,9 +1554,18 @@
                         cuisineStyle: mealData.cuisineStyle || '',
                         date: mealData.date,
                         notes: mealData.notes || '',
-                        rating: mealData.rating || 0,
                         favorite: mealData.favorite || false,
-                        image: null
+                        image: null,
+                        // Handle both old and new rating formats
+                        rating: mealData.rating || 0,
+                        ratings: mealData.ratings || {
+                            taste: 0,
+                            appearance: 0,
+                            health: 0,
+                            ease: 0,
+                            cost: 0,
+                            overall: mealData.rating || 0
+                        }
                     };
                     
                     // Load image if exists
@@ -1208,7 +1623,14 @@
                 const cuisineStyle = document.getElementById('cuisineStyle').value;
                 const mealDate = document.getElementById('mealDate').value;
                 const mealNotes = document.getElementById('mealNotes').value;
-                const rating = parseInt(document.querySelector('input[name="rating"]:checked')?.value || 0);
+                
+                // Get detailed ratings
+                const tasteRating = parseInt(document.querySelector('input[name="tasteRating"]:checked')?.value || 0);
+                const appearanceRating = parseInt(document.querySelector('input[name="appearanceRating"]:checked')?.value || 0);
+                const healthRating = parseInt(document.querySelector('input[name="healthRating"]:checked')?.value || 0);
+                const easeRating = parseInt(document.querySelector('input[name="easeRating"]:checked')?.value || 0);
+                const costRating = parseInt(document.querySelector('input[name="costRating"]:checked')?.value || 0);
+                const overallRating = parseInt(document.getElementById('overallRating').value || 0);
                 
                 // Create meal object for Firestore
                 const mealData = {
@@ -1218,7 +1640,15 @@
                     cuisineStyle: cuisineStyle,
                     date: mealDate,
                     notes: mealNotes,
-                    rating: rating,
+                    rating: overallRating, // For backward compatibility
+                    ratings: {
+                        taste: tasteRating,
+                        appearance: appearanceRating,
+                        health: healthRating,
+                        ease: easeRating,
+                        cost: costRating,
+                        overall: overallRating
+                    },
                     favorite: false,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
@@ -1255,8 +1685,7 @@
                 this.reset();
                 document.getElementById('mealDate').valueAsDate = new Date();
                 resetImageUpload();
-                ratingInputs.forEach(input => input.checked = false);
-                updateRatingText('');
+                resetRatings();
                 
                 // Show thank you animation
                 showThankYouAnimation();
@@ -1272,6 +1701,33 @@
                 alert("Error saving your meal. Please try again.");
             }
         });
+
+        // Reset all ratings
+        function resetRatings() {
+            document.querySelectorAll('input[name="tasteRating"]').forEach(input => input.checked = false);
+            document.querySelectorAll('input[name="appearanceRating"]').forEach(input => input.checked = false);
+            document.querySelectorAll('input[name="healthRating"]').forEach(input => input.checked = false);
+            document.querySelectorAll('input[name="easeRating"]').forEach(input => input.checked = false);
+            document.querySelectorAll('input[name="costRating"]').forEach(input => input.checked = false);
+            
+            document.getElementById('tasteRatingText').textContent = 'Not rated';
+            document.getElementById('appearanceRatingText').textContent = 'Not rated';
+            document.getElementById('healthRatingText').textContent = 'Not rated';
+            document.getElementById('easeRatingText').textContent = 'Not rated';
+            document.getElementById('costRatingText').textContent = 'Not rated';
+            
+            document.getElementById('overallRatingDisplay').textContent = 'Not Rated';
+            document.getElementById('overallRatingText').textContent = 'Average of all ratings';
+            document.getElementById('overallRating').value = 0;
+            
+            // Reset rating values
+            ratingValues.taste = 0;
+            ratingValues.appearance = 0;
+            ratingValues.health = 0;
+            ratingValues.ease = 0;
+            ratingValues.cost = 0;
+            ratingValues.overall = 0;
+        }
 
         // Helper function to highlight search terms in text
         function highlightText(text, searchTerm) {
@@ -1359,17 +1815,71 @@
                     document.getElementById('mealDate').value = mealData.date;
                     document.getElementById('mealNotes').value = mealData.notes || '';
                     
-                    // Set rating if exists
-                    if (mealData.rating) {
-                        const ratingInput = document.getElementById(`star${mealData.rating}`);
-                        if (ratingInput) {
-                            ratingInput.checked = true;
-                            updateRatingText(mealData.rating);
+                    // Reset ratings first
+                    resetRatings();
+                    
+                    // Set ratings if they exist
+                    if (mealData.ratings) {
+                        const ratings = mealData.ratings;
+                        
+                        // Taste rating
+                        if (ratings.taste) {
+                            const tasteInput = document.getElementById(`taste-${ratings.taste}`);
+                            if (tasteInput) {
+                                tasteInput.checked = true;
+                                updateCriteriaRatingText('taste', ratings.taste);
+                                ratingValues.taste = ratings.taste;
+                            }
                         }
-                    } else {
-                        // Clear rating
-                        ratingInputs.forEach(input => input.checked = false);
-                        updateRatingText('');
+                        
+                        // Appearance rating
+                        if (ratings.appearance) {
+                            const appearanceInput = document.getElementById(`appearance-${ratings.appearance}`);
+                            if (appearanceInput) {
+                                appearanceInput.checked = true;
+                                updateCriteriaRatingText('appearance', ratings.appearance);
+                                ratingValues.appearance = ratings.appearance;
+                            }
+                        }
+                        
+                        // Health rating
+                        if (ratings.health) {
+                            const healthInput = document.getElementById(`health-${ratings.health}`);
+                            if (healthInput) {
+                                healthInput.checked = true;
+                                updateCriteriaRatingText('health', ratings.health);
+                                ratingValues.health = ratings.health;
+                            }
+                        }
+                        
+                        // Ease rating
+                        if (ratings.ease) {
+                            const easeInput = document.getElementById(`ease-${ratings.ease}`);
+                            if (easeInput) {
+                                easeInput.checked = true;
+                                updateCriteriaRatingText('ease', ratings.ease);
+                                ratingValues.ease = ratings.ease;
+                            }
+                        }
+                        
+                        // Cost rating
+                        if (ratings.cost) {
+                            const costInput = document.getElementById(`cost-${ratings.cost}`);
+                            if (costInput) {
+                                costInput.checked = true;
+                                updateCriteriaRatingText('cost', ratings.cost);
+                                ratingValues.cost = ratings.cost;
+                            }
+                        }
+                        
+                        // Update overall rating
+                        updateOverallRating();
+                    }
+                    // Fallback for old data format
+                    else if (mealData.rating) {
+                        document.getElementById('overallRatingDisplay').textContent = '★'.repeat(mealData.rating) + '☆'.repeat(5 - mealData.rating);
+                        document.getElementById('overallRating').value = mealData.rating;
+                        ratingValues.overall = mealData.rating;
                     }
                     
                     // Reset image first
@@ -1404,7 +1914,14 @@
                             const cuisineStyle = document.getElementById('cuisineStyle').value;
                             const mealDate = document.getElementById('mealDate').value;
                             const mealNotes = document.getElementById('mealNotes').value;
-                            const rating = parseInt(document.querySelector('input[name="rating"]:checked')?.value || 0);
+                            
+                            // Get detailed ratings
+                            const tasteRating = parseInt(document.querySelector('input[name="tasteRating"]:checked')?.value || 0);
+                            const appearanceRating = parseInt(document.querySelector('input[name="appearanceRating"]:checked')?.value || 0);
+                            const healthRating = parseInt(document.querySelector('input[name="healthRating"]:checked')?.value || 0);
+                            const easeRating = parseInt(document.querySelector('input[name="easeRating"]:checked')?.value || 0);
+                            const costRating = parseInt(document.querySelector('input[name="costRating"]:checked')?.value || 0);
+                            const overallRating = parseInt(document.getElementById('overallRating').value || 0);
                             
                             // Create meal object for Firestore
                             const updatedMealData = {
@@ -1414,7 +1931,15 @@
                                 cuisineStyle: cuisineStyle,
                                 date: mealDate,
                                 notes: mealNotes,
-                                rating: rating,
+                                rating: overallRating, // For backward compatibility
+                                ratings: {
+                                    taste: tasteRating,
+                                    appearance: appearanceRating,
+                                    health: healthRating,
+                                    ease: easeRating,
+                                    cost: costRating,
+                                    overall: overallRating
+                                },
                                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                             };
                             
@@ -1466,8 +1991,7 @@
                             this.reset();
                             document.getElementById('mealDate').valueAsDate = new Date();
                             resetImageUpload();
-                            ratingInputs.forEach(input => input.checked = false);
-                            updateRatingText('');
+                            resetRatings();
                             
                             // Re-add the original event listener
                             const form = document.getElementById('mealForm');
@@ -1489,6 +2013,9 @@
                             alert("Error updating your meal. Please try again.");
                         }
                     });
+                    
+                    // Re-setup rating listeners
+                    setupRatingListeners();
                 }
                 
                 hideLoading();
@@ -1503,9 +2030,13 @@
         function handleRate(e) {
             const mealId = e.target.dataset.id;
             const mealName = e.target.dataset.name;
-            const currentRating = parseInt(e.target.dataset.rating) || 0;
+            const meal = meals.find(m => m.id === mealId);
             
-            openRatingModal(mealId, mealName, currentRating);
+            if (meal) {
+                openRatingModal(mealId, mealName, meal.ratings);
+            } else {
+                openRatingModal(mealId, mealName);
+            }
         }
 
         // Set up form listeners
@@ -1529,7 +2060,14 @@
                     const cuisineStyle = document.getElementById('cuisineStyle').value;
                     const mealDate = document.getElementById('mealDate').value;
                     const mealNotes = document.getElementById('mealNotes').value;
-                    const rating = parseInt(document.querySelector('input[name="rating"]:checked')?.value || 0);
+                    
+                    // Get detailed ratings
+                    const tasteRating = parseInt(document.querySelector('input[name="tasteRating"]:checked')?.value || 0);
+                    const appearanceRating = parseInt(document.querySelector('input[name="appearanceRating"]:checked')?.value || 0);
+                    const healthRating = parseInt(document.querySelector('input[name="healthRating"]:checked')?.value || 0);
+                    const easeRating = parseInt(document.querySelector('input[name="easeRating"]:checked')?.value || 0);
+                    const costRating = parseInt(document.querySelector('input[name="costRating"]:checked')?.value || 0);
+                    const overallRating = parseInt(document.getElementById('overallRating').value || 0);
                     
                     // Create meal object for Firestore
                     const mealData = {
@@ -1539,7 +2077,15 @@
                         cuisineStyle: cuisineStyle,
                         date: mealDate,
                         notes: mealNotes,
-                        rating: rating,
+                        rating: overallRating, // For backward compatibility
+                        ratings: {
+                            taste: tasteRating,
+                            appearance: appearanceRating,
+                            health: healthRating,
+                            ease: easeRating,
+                            cost: costRating,
+                            overall: overallRating
+                        },
                         favorite: false,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     };
@@ -1576,8 +2122,7 @@
                     this.reset();
                     document.getElementById('mealDate').valueAsDate = new Date();
                     resetImageUpload();
-                    ratingInputs.forEach(input => input.checked = false);
-                    updateRatingText('');
+                    resetRatings();
                     
                     // Show thank you animation
                     showThankYouAnimation();
@@ -1594,12 +2139,8 @@
                 }
             });
             
-            // Set up rating inputs
-            document.querySelectorAll('input[name="rating"]').forEach(input => {
-                input.addEventListener('change', function() {
-                    updateRatingText(this.value);
-                });
-            });
+            // Set up rating listeners
+            setupRatingListeners();
             
             // Set up image upload
             document.getElementById('mealImage').addEventListener('change', function(e) {
@@ -1764,9 +2305,9 @@
                     <div class="p-4">
                         <h3 class="text-lg font-medium mb-1">${meal.name}</h3>
                         <div class="flex flex-wrap gap-1 mb-2">
-                            <span class="inline-block bg-purple-100 text-purple-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-purple-900 dark:text-purple-300">${meal.category}</span>
-                            ${meal.proteinType ? `<span class="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">${meal.proteinType}</span>` : ''}
-                            ${meal.cuisineStyle ? `<span class="inline-block bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-green-900 dark:text-green-300">${meal.cuisineStyle}</span>` : ''}
+                            <span class="inline-block bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-purple-900 dark:text-purple-300">${meal.category}</span>
+                            ${meal.proteinType ? `<span class="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">${meal.proteinType}</span>` : ''}
+                            ${meal.cuisineStyle ? `<span class="inline-block bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">${meal.cuisineStyle}</span>` : ''}
                         </div>
                         ${ratingDisplay}
                         <div class="text-gray-500 dark:text-gray-400 text-sm mb-2">${formattedDate}</div>
@@ -1779,7 +2320,6 @@
                             <button 
                                 data-id="${meal.id}" 
                                 data-name="${meal.name}"
-                                data-rating="${meal.rating || 0}"
                                 class="rate-meal text-xs md:text-sm bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:hover:bg-yellow-800 dark:text-yellow-300 flex-1">
                                 ${meal.rating ? 'Rate Again' : 'Rate'}
                             </button>
@@ -1963,6 +2503,22 @@
                         `<div class="text-yellow-500 mt-1">${formatRating(meal.rating)}</div>` : 
                         '<div class="text-gray-400 mt-1 text-sm italic">Not rated</div>';
                     
+                    // Create detailed ratings section if available
+                    let detailedRatingsHtml = '';
+                    if (meal.ratings && (meal.ratings.taste || meal.ratings.appearance || meal.ratings.health || meal.ratings.ease || meal.ratings.cost)) {
+                        detailedRatingsHtml = `
+                            <div class="mt-2 mb-3 text-sm">
+                                <div class="flex flex-wrap gap-x-4 gap-y-1">
+                                    ${meal.ratings.taste ? `<span class="flex items-center"><span class="font-medium mr-1">Taste:</span> <span class="text-yellow-500">${formatRating(meal.ratings.taste)}</span></span>` : ''}
+                                    ${meal.ratings.appearance ? `<span class="flex items-center"><span class="font-medium mr-1">Appearance:</span> <span class="text-yellow-500">${formatRating(meal.ratings.appearance)}</span></span>` : ''}
+                                    ${meal.ratings.health ? `<span class="flex items-center"><span class="font-medium mr-1">Nutrition:</span> <span class="text-yellow-500">${formatRating(meal.ratings.health)}</span></span>` : ''}
+                                    ${meal.ratings.ease ? `<span class="flex items-center"><span class="font-medium mr-1">Ease:</span> <span class="text-yellow-500">${formatRating(meal.ratings.ease)}</span></span>` : ''}
+                                    ${meal.ratings.cost ? `<span class="flex items-center"><span class="font-medium mr-1">Cost:</span> <span class="text-yellow-500">${formatRating(meal.ratings.cost)}</span></span>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
                     // Structure for meal with/without image
                     if (meal.image) {
                         mealItem.innerHTML = `
@@ -1983,12 +2539,12 @@
                                         ${meal.cuisineStyle ? `<span class="inline-block bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">${meal.cuisineStyle}</span>` : ''}
                                     </div>
                                     ${ratingDisplay}
+                                    ${detailedRatingsHtml}
                                     <p class="text-gray-600 dark:text-gray-400 text-sm mb-3">${highlightedNotes}</p>
                                     <div class="flex flex-wrap gap-2">
                                         <button 
                                             data-id="${meal.id}" 
                                             data-name="${meal.name}"
-                                            data-rating="${meal.rating || 0}"
                                             class="rate-meal text-xs md:text-sm bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:hover:bg-yellow-800 dark:text-yellow-300">
                                             ${meal.rating ? 'Rate Again' : 'Rate'}
                                         </button>
@@ -2021,12 +2577,12 @@
                                     ${meal.cuisineStyle ? `<span class="inline-block bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">${meal.cuisineStyle}</span>` : ''}
                                 </div>
                                 ${ratingDisplay}
+                                ${detailedRatingsHtml}
                                 <p class="text-gray-600 dark:text-gray-400 text-sm mb-3">${highlightedNotes}</p>
                                 <div class="flex flex-wrap gap-2">
                                     <button 
                                         data-id="${meal.id}" 
                                         data-name="${meal.name}"
-                                        data-rating="${meal.rating || 0}"
                                         class="rate-meal text-xs md:text-sm bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:hover:bg-yellow-800 dark:text-yellow-300">
                                         ${meal.rating ? 'Rate Again' : 'Rate'}
                                     </button>
@@ -2068,7 +2624,7 @@
         }
 
         // Statistics functions
-        let categoryChart, timeChart, ratingChart;
+        let categoryChart, timeChart, ratingChart, ratingCriteriaChart;
 
         function updateStats() {
             const period = document.getElementById('statsPeriod').value;
@@ -2101,6 +2657,9 @@
             
             // Update rating chart
             updateRatingChart(filteredMeals);
+            
+            // Update rating criteria chart
+            updateRatingCriteriaChart(filteredMeals);
             
             // Update summary statistics
             updateSummaryStats(filteredMeals, period);
@@ -2312,6 +2871,107 @@
                             },
                             grid: {
                                 color: isDarkMode() ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateRatingCriteriaChart(filteredMeals) {
+            // Calculate average ratings for each criteria
+            let tasteTotalSum = 0;
+            let tasteCount = 0;
+            let appearanceTotalSum = 0;
+            let appearanceCount = 0;
+            let healthTotalSum = 0;
+            let healthCount = 0;
+            let easeTotalSum = 0;
+            let easeCount = 0;
+            let costTotalSum = 0;
+            let costCount = 0;
+            
+            filteredMeals.forEach(meal => {
+                if (meal.ratings) {
+                    if (meal.ratings.taste) {
+                        tasteTotalSum += meal.ratings.taste;
+                        tasteCount++;
+                    }
+                    if (meal.ratings.appearance) {
+                        appearanceTotalSum += meal.ratings.appearance;
+                        appearanceCount++;
+                    }
+                    if (meal.ratings.health) {
+                        healthTotalSum += meal.ratings.health;
+                        healthCount++;
+                    }
+                    if (meal.ratings.ease) {
+                        easeTotalSum += meal.ratings.ease;
+                        easeCount++;
+                    }
+                    if (meal.ratings.cost) {
+                        costTotalSum += meal.ratings.cost;
+                        costCount++;
+                    }
+                }
+            });
+            
+            const tasteAvg = tasteCount > 0 ? tasteTotalSum / tasteCount : 0;
+            const appearanceAvg = appearanceCount > 0 ? appearanceTotalSum / appearanceCount : 0;
+            const healthAvg = healthCount > 0 ? healthTotalSum / healthCount : 0;
+            const easeAvg = easeCount > 0 ? easeTotalSum / easeCount : 0;
+            const costAvg = costCount > 0 ? costTotalSum / costCount : 0;
+            
+            // Create or update chart
+            const ctx = document.getElementById('ratingCriteriaChart').getContext('2d');
+            
+            if (ratingCriteriaChart) {
+                ratingCriteriaChart.destroy();
+            }
+            
+            ratingCriteriaChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Taste', 'Appearance', 'Nutrition', 'Ease of Preparation', 'Cost Effectiveness'],
+                    datasets: [{
+                        label: 'Average Rating',
+                        data: [tasteAvg, appearanceAvg, healthAvg, easeAvg, costAvg],
+                        backgroundColor: 'rgba(93, 92, 222, 0.3)',
+                        borderColor: 'rgba(93, 92, 222, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(93, 92, 222, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(93, 92, 222, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: isDarkMode() ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: isDarkMode() ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                color: isDarkMode() ? '#e5e7eb' : '#1f2937',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 5,
+                            ticks: {
+                                stepSize: 1,
+                                backdropColor: 'transparent'
                             }
                         }
                     },

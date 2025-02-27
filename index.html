@@ -132,11 +132,11 @@
             transform: scale(1);
         }
         
-        /* Star rating */
+        /* Star rating (left to right) */
         .star-rating {
             display: inline-flex;
-            flex-direction: row-reverse;
-            justify-content: flex-end;
+            flex-direction: row;
+            justify-content: flex-start;
         }
         
         .star-rating input {
@@ -151,6 +151,7 @@
             background-repeat: no-repeat;
             background-position: center;
             background-size: 24px;
+            margin-right: 5px;
         }
         
         .star-rating input:checked ~ label {
@@ -196,6 +197,7 @@
             height: 24px;
             font-size: 24px;
             color: #D1D5DB;
+            margin-right: 5px;
         }
         
         .criteria-star-rating input:checked ~ label {
@@ -215,6 +217,7 @@
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            position: relative;
         }
         
         .family-photo {
@@ -222,6 +225,40 @@
             height: auto;
             object-fit: cover;
             display: block;
+        }
+        
+        .photo-upload-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 8px;
+            font-size: 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: opacity 0.3s;
+            opacity: 0;
+        }
+        
+        .family-photo-container:hover .photo-upload-overlay {
+            opacity: 1;
+        }
+        
+        /* Alert styles */
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            max-width: 400px;
+            z-index: 9999;
+            animation: slideIn 0.5s forwards;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
         
         /* Debug log styles */
@@ -244,6 +281,9 @@
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+    <!-- Alert Container -->
+    <div id="alertContainer"></div>
+    
     <!-- Login/Signup Modal -->
     <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
@@ -252,9 +292,13 @@
                 <p class="text-sm text-gray-600 dark:text-gray-400">Created by Keith Cho</p>
             </div>
             
-            <!-- Keith's Family Photo -->
+            <!-- Customizable Family Photo -->
             <div class="family-photo-container mb-4">
-                <img src="https://i.imgur.com/Mf8CpA9.jpg" alt="Keith Cho's Family" class="family-photo">
+                <img id="familyPhoto" src="data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect fill='%23f0f0f0' width='400' height='300'/%3E%3Ctext fill='%23999999' font-family='Arial' font-size='20' x='200' y='150' text-anchor='middle'%3EClick to add family photo%3C/text%3E%3C/svg%3E" alt="Family Photo" class="family-photo">
+                <div class="photo-upload-overlay" id="photoUploadOverlay">
+                    Click to change photo
+                </div>
+                <input type="file" id="familyPhotoInput" accept="image/*" style="display: none;">
             </div>
             
             <h2 class="text-xl font-semibold mb-4 text-center" id="authTitle">Sign In</h2>
@@ -462,7 +506,7 @@
                             </div>
                         </div>
                         
-                        <!-- Advanced Rating Section -->
+                        <!-- Advanced Rating Section (Left to Right) -->
                         <div class="mb-6 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                             <h3 class="text-lg font-medium mb-3">Meal Rating</h3>
                             
@@ -471,16 +515,16 @@
                                 <div class="rating-criteria">
                                     <div class="rating-criteria-title">Taste</div>
                                     <div class="criteria-star-rating">
-                                        <input type="radio" id="taste-5" name="tasteRating" value="5" class="hidden peer" />
-                                        <label for="taste-5" class="cursor-pointer">★</label>
-                                        <input type="radio" id="taste-4" name="tasteRating" value="4" class="hidden peer" />
-                                        <label for="taste-4" class="cursor-pointer">★</label>
-                                        <input type="radio" id="taste-3" name="tasteRating" value="3" class="hidden peer" />
-                                        <label for="taste-3" class="cursor-pointer">★</label>
-                                        <input type="radio" id="taste-2" name="tasteRating" value="2" class="hidden peer" />
-                                        <label for="taste-2" class="cursor-pointer">★</label>
-                                        <input type="radio" id="taste-1" name="tasteRating" value="1" class="hidden peer" />
                                         <label for="taste-1" class="cursor-pointer">★</label>
+                                        <input type="radio" id="taste-1" name="tasteRating" value="1" class="hidden peer" />
+                                        <label for="taste-2" class="cursor-pointer">★</label>
+                                        <input type="radio" id="taste-2" name="tasteRating" value="2" class="hidden peer" />
+                                        <label for="taste-3" class="cursor-pointer">★</label>
+                                        <input type="radio" id="taste-3" name="tasteRating" value="3" class="hidden peer" />
+                                        <label for="taste-4" class="cursor-pointer">★</label>
+                                        <input type="radio" id="taste-4" name="tasteRating" value="4" class="hidden peer" />
+                                        <label for="taste-5" class="cursor-pointer">★</label>
+                                        <input type="radio" id="taste-5" name="tasteRating" value="5" class="hidden peer" />
                                     </div>
                                     <div class="text-xs text-gray-500 mt-1" id="tasteRatingText">Not rated</div>
                                 </div>
@@ -489,16 +533,16 @@
                                 <div class="rating-criteria">
                                     <div class="rating-criteria-title">Appearance</div>
                                     <div class="criteria-star-rating">
-                                        <input type="radio" id="appearance-5" name="appearanceRating" value="5" class="hidden peer" />
-                                        <label for="appearance-5" class="cursor-pointer">★</label>
-                                        <input type="radio" id="appearance-4" name="appearanceRating" value="4" class="hidden peer" />
-                                        <label for="appearance-4" class="cursor-pointer">★</label>
-                                        <input type="radio" id="appearance-3" name="appearanceRating" value="3" class="hidden peer" />
-                                        <label for="appearance-3" class="cursor-pointer">★</label>
-                                        <input type="radio" id="appearance-2" name="appearanceRating" value="2" class="hidden peer" />
-                                        <label for="appearance-2" class="cursor-pointer">★</label>
-                                        <input type="radio" id="appearance-1" name="appearanceRating" value="1" class="hidden peer" />
                                         <label for="appearance-1" class="cursor-pointer">★</label>
+                                        <input type="radio" id="appearance-1" name="appearanceRating" value="1" class="hidden peer" />
+                                        <label for="appearance-2" class="cursor-pointer">★</label>
+                                        <input type="radio" id="appearance-2" name="appearanceRating" value="2" class="hidden peer" />
+                                        <label for="appearance-3" class="cursor-pointer">★</label>
+                                        <input type="radio" id="appearance-3" name="appearanceRating" value="3" class="hidden peer" />
+                                        <label for="appearance-4" class="cursor-pointer">★</label>
+                                        <input type="radio" id="appearance-4" name="appearanceRating" value="4" class="hidden peer" />
+                                        <label for="appearance-5" class="cursor-pointer">★</label>
+                                        <input type="radio" id="appearance-5" name="appearanceRating" value="5" class="hidden peer" />
                                     </div>
                                     <div class="text-xs text-gray-500 mt-1" id="appearanceRatingText">Not rated</div>
                                 </div>
@@ -507,16 +551,16 @@
                                 <div class="rating-criteria">
                                     <div class="rating-criteria-title">Nutrition Value</div>
                                     <div class="criteria-star-rating">
-                                        <input type="radio" id="health-5" name="healthRating" value="5" class="hidden peer" />
-                                        <label for="health-5" class="cursor-pointer">★</label>
-                                        <input type="radio" id="health-4" name="healthRating" value="4" class="hidden peer" />
-                                        <label for="health-4" class="cursor-pointer">★</label>
-                                        <input type="radio" id="health-3" name="healthRating" value="3" class="hidden peer" />
-                                        <label for="health-3" class="cursor-pointer">★</label>
-                                        <input type="radio" id="health-2" name="healthRating" value="2" class="hidden peer" />
-                                        <label for="health-2" class="cursor-pointer">★</label>
-                                        <input type="radio" id="health-1" name="healthRating" value="1" class="hidden peer" />
                                         <label for="health-1" class="cursor-pointer">★</label>
+                                        <input type="radio" id="health-1" name="healthRating" value="1" class="hidden peer" />
+                                        <label for="health-2" class="cursor-pointer">★</label>
+                                        <input type="radio" id="health-2" name="healthRating" value="2" class="hidden peer" />
+                                        <label for="health-3" class="cursor-pointer">★</label>
+                                        <input type="radio" id="health-3" name="healthRating" value="3" class="hidden peer" />
+                                        <label for="health-4" class="cursor-pointer">★</label>
+                                        <input type="radio" id="health-4" name="healthRating" value="4" class="hidden peer" />
+                                        <label for="health-5" class="cursor-pointer">★</label>
+                                        <input type="radio" id="health-5" name="healthRating" value="5" class="hidden peer" />
                                     </div>
                                     <div class="text-xs text-gray-500 mt-1" id="healthRatingText">Not rated</div>
                                 </div>
@@ -525,16 +569,16 @@
                                 <div class="rating-criteria">
                                     <div class="rating-criteria-title">Ease of Preparation</div>
                                     <div class="criteria-star-rating">
-                                        <input type="radio" id="ease-5" name="easeRating" value="5" class="hidden peer" />
-                                        <label for="ease-5" class="cursor-pointer">★</label>
-                                        <input type="radio" id="ease-4" name="easeRating" value="4" class="hidden peer" />
-                                        <label for="ease-4" class="cursor-pointer">★</label>
-                                        <input type="radio" id="ease-3" name="easeRating" value="3" class="hidden peer" />
-                                        <label for="ease-3" class="cursor-pointer">★</label>
-                                        <input type="radio" id="ease-2" name="easeRating" value="2" class="hidden peer" />
-                                        <label for="ease-2" class="cursor-pointer">★</label>
-                                        <input type="radio" id="ease-1" name="easeRating" value="1" class="hidden peer" />
                                         <label for="ease-1" class="cursor-pointer">★</label>
+                                        <input type="radio" id="ease-1" name="easeRating" value="1" class="hidden peer" />
+                                        <label for="ease-2" class="cursor-pointer">★</label>
+                                        <input type="radio" id="ease-2" name="easeRating" value="2" class="hidden peer" />
+                                        <label for="ease-3" class="cursor-pointer">★</label>
+                                        <input type="radio" id="ease-3" name="easeRating" value="3" class="hidden peer" />
+                                        <label for="ease-4" class="cursor-pointer">★</label>
+                                        <input type="radio" id="ease-4" name="easeRating" value="4" class="hidden peer" />
+                                        <label for="ease-5" class="cursor-pointer">★</label>
+                                        <input type="radio" id="ease-5" name="easeRating" value="5" class="hidden peer" />
                                     </div>
                                     <div class="text-xs text-gray-500 mt-1" id="easeRatingText">Not rated</div>
                                 </div>
@@ -543,16 +587,16 @@
                                 <div class="rating-criteria">
                                     <div class="rating-criteria-title">Cost Effectiveness</div>
                                     <div class="criteria-star-rating">
-                                        <input type="radio" id="cost-5" name="costRating" value="5" class="hidden peer" />
-                                        <label for="cost-5" class="cursor-pointer">★</label>
-                                        <input type="radio" id="cost-4" name="costRating" value="4" class="hidden peer" />
-                                        <label for="cost-4" class="cursor-pointer">★</label>
-                                        <input type="radio" id="cost-3" name="costRating" value="3" class="hidden peer" />
-                                        <label for="cost-3" class="cursor-pointer">★</label>
-                                        <input type="radio" id="cost-2" name="costRating" value="2" class="hidden peer" />
-                                        <label for="cost-2" class="cursor-pointer">★</label>
-                                        <input type="radio" id="cost-1" name="costRating" value="1" class="hidden peer" />
                                         <label for="cost-1" class="cursor-pointer">★</label>
+                                        <input type="radio" id="cost-1" name="costRating" value="1" class="hidden peer" />
+                                        <label for="cost-2" class="cursor-pointer">★</label>
+                                        <input type="radio" id="cost-2" name="costRating" value="2" class="hidden peer" />
+                                        <label for="cost-3" class="cursor-pointer">★</label>
+                                        <input type="radio" id="cost-3" name="costRating" value="3" class="hidden peer" />
+                                        <label for="cost-4" class="cursor-pointer">★</label>
+                                        <input type="radio" id="cost-4" name="costRating" value="4" class="hidden peer" />
+                                        <label for="cost-5" class="cursor-pointer">★</label>
+                                        <input type="radio" id="cost-5" name="costRating" value="5" class="hidden peer" />
                                     </div>
                                     <div class="text-xs text-gray-500 mt-1" id="costRatingText">Not rated</div>
                                 </div>
@@ -914,36 +958,22 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.js"></script>
     <script>
-        // Firebase Configuration - Update with your Firebase config
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAQ23N_b9d3HXoFZjLuyWpaSYieaQj1iVQ",
             authDomain: "family-meal-tracker.firebaseapp.com",
             databaseURL: "https://family-meal-tracker-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "family-meal-tracker",
-            storageBucket: "family-meal-tracker.appspot.com", // Fixed storageBucket URL
+            storageBucket: "family-meal-tracker.appspot.com", // FIXED: Corrected storage bucket URL
             messagingSenderId: "347030000985",
             appId: "1:347030000985:web:120168d9840e1abbbf2848",
             measurementId: "G-LYGM70REWG"
         };
         
-        // Enable debug mode - this will appear in bottom right corner when toggled
-        let debugMode = false;
+        // Enable debug mode
+        let debugMode = true;
         const debugLog = document.getElementById('debugLog');
-        
-        function toggleDebug() {
-            debugMode = !debugMode;
-            debugLog.style.display = debugMode ? 'block' : 'none';
-            if (debugMode) {
-                logDebug('Debug mode enabled');
-            }
-        }
-        
-        // Press Ctrl+Shift+D to toggle debug mode
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.shiftKey && e.key === 'D') {
-                toggleDebug();
-            }
-        });
+        debugLog.style.display = debugMode ? 'block' : 'none';
         
         function logDebug(message) {
             if (debugMode) {
@@ -953,6 +983,41 @@
                 debugLog.appendChild(entry);
                 debugLog.scrollTop = debugLog.scrollHeight;
                 console.log(`[DEBUG] ${message}`);
+            }
+        }
+        
+        // Alert System
+        function showAlert(message, type = 'info', duration = 5000) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert p-4 mb-4 rounded-lg ${getAlertColorClass(type)}`;
+            alert.innerHTML = `
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            alertContainer.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.style.animation = 'slideIn 0.5s reverse forwards';
+                setTimeout(() => {
+                    alertContainer.removeChild(alert);
+                }, 500);
+            }, duration);
+            
+            logDebug(`Alert [${type}]: ${message}`);
+        }
+        
+        function getAlertColorClass(type) {
+            switch(type) {
+                case 'success': return 'text-green-700 bg-green-100 dark:bg-green-900 dark:text-green-200';
+                case 'error': return 'text-red-700 bg-red-100 dark:bg-red-900 dark:text-red-200';
+                case 'warning': return 'text-yellow-700 bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-200';
+                default: return 'text-blue-700 bg-blue-100 dark:bg-blue-900 dark:text-blue-200';
             }
         }
         
@@ -967,14 +1032,40 @@
             
             logDebug('Firebase initialized successfully');
             
-            // Test connection to Firestore
-            db.collection('test').get()
+            // Test Firebase Connectivity
+            function testFirebaseConnections() {
+                // Test Firestore
+                db.collection('_test_').doc('connectivity').set({
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                })
                 .then(() => {
                     logDebug('Firestore connection test successful');
+                    showAlert('Firestore connection successful', 'success', 3000);
                 })
                 .catch(error => {
-                    logDebug(`Firestore connection test failed: ${error.message}`);
+                    logDebug(`Firestore connection error: ${error.message}`);
+                    showAlert(`Firestore connection error: ${error.message}`, 'error');
                 });
+                
+                // Test Storage
+                const testRef = storage.ref().child('_test_/connectivity.txt');
+                testRef.putString('Test connectivity')
+                .then(() => {
+                    logDebug('Storage connection test successful');
+                    showAlert('Storage connection successful', 'success', 3000);
+                    // Clean up
+                    testRef.delete().catch(e => console.log('Error cleaning test file', e));
+                })
+                .catch(error => {
+                    logDebug(`Storage connection error: ${error.message}`);
+                    showAlert(`Storage connection error: ${error.message}`, 'error');
+                });
+            }
+            
+            // Run connection test when in debug mode
+            if (debugMode) {
+                testFirebaseConnections();
+            }
             
             // Authentication variables and elements
             const authModal = document.getElementById('authModal');
@@ -994,6 +1085,91 @@
             const googleSignInBtn = document.getElementById('googleSignIn');
             const thankYouContainer = document.getElementById('thankYouContainer');
             const thankYouClose = document.getElementById('thankYouClose');
+            
+            // Family Photo Customization
+            const familyPhoto = document.getElementById('familyPhoto');
+            const photoUploadOverlay = document.getElementById('photoUploadOverlay');
+            const familyPhotoInput = document.getElementById('familyPhotoInput');
+            
+            // Handle family photo upload
+            photoUploadOverlay.addEventListener('click', function() {
+                familyPhotoInput.click();
+            });
+            
+            familyPhoto.addEventListener('click', function() {
+                familyPhotoInput.click();
+            });
+            
+            familyPhotoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Show preview
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        familyPhoto.src = event.target.result;
+                        // If logged in, save to Firebase
+                        if (auth.currentUser) {
+                            saveFamilyPhotoToFirebase(file);
+                        } else {
+                            // Just save to localStorage temporarily
+                            localStorage.setItem('tempFamilyPhoto', event.target.result);
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Save family photo to Firebase
+            async function saveFamilyPhotoToFirebase(file) {
+                if (!auth.currentUser) return;
+                
+                try {
+                    showLoading('Saving your family photo...');
+                    
+                    // Create reference to 'familyPhoto.jpg' in user's folder
+                    const storageRef = storage.ref(`users/${auth.currentUser.uid}/familyPhoto.jpg`);
+                    
+                    // Upload the file
+                    await storageRef.put(file);
+                    
+                    // Get download URL and save to user profile
+                    const downloadURL = await storageRef.getDownloadURL();
+                    
+                    // Save URL to user profile in Firestore
+                    await db.collection('users').doc(auth.currentUser.uid).update({
+                        familyPhotoURL: downloadURL,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    hideLoading();
+                    showAlert('Family photo saved successfully!', 'success');
+                    
+                } catch (error) {
+                    hideLoading();
+                    logDebug(`Error saving family photo: ${error.message}`);
+                    showAlert(`Error saving family photo: ${error.message}`, 'error');
+                }
+            }
+            
+            // Load family photo from Firebase
+            async function loadFamilyPhoto() {
+                if (!auth.currentUser) return;
+                
+                try {
+                    // Get user data from Firestore
+                    const userDoc = await db.collection('users').doc(auth.currentUser.uid).get();
+                    
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        if (userData.familyPhotoURL) {
+                            familyPhoto.src = userData.familyPhotoURL;
+                            logDebug('Family photo loaded from Firestore');
+                        }
+                    }
+                } catch (error) {
+                    logDebug(`Error loading family photo: ${error.message}`);
+                }
+            }
             
             // Rating variables and elements
             const tasteRatingInputs = document.querySelectorAll('input[name="tasteRating"]');
@@ -1100,6 +1276,7 @@
                     }
                 } catch (error) {
                     logDebug(`Google Sign In error: ${error.message}`);
+                    showAlert(`Google Sign In error: ${error.message}`, 'error');
                     authError.textContent = error.message;
                     authError.classList.remove('hidden');
                 }
@@ -1143,6 +1320,16 @@
                             role: userRole,
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
+                        
+                        // Check if there's a temp family photo to save
+                        const tempFamilyPhoto = localStorage.getItem('tempFamilyPhoto');
+                        if (tempFamilyPhoto) {
+                            // Convert data URL to blob
+                            const response = await fetch(tempFamilyPhoto);
+                            const blob = await response.blob();
+                            await saveFamilyPhotoToFirebase(blob);
+                            localStorage.removeItem('tempFamilyPhoto');
+                        }
                     } else {
                         // Sign in existing user
                         logDebug('Signing in with email and password');
@@ -1159,6 +1346,7 @@
                 } catch (error) {
                     logDebug(`Auth error: ${error.message}`);
                     hideLoading();
+                    showAlert(`Authentication error: ${error.message}`, 'error');
                     authError.textContent = error.message;
                     authError.classList.remove('hidden');
                 }
@@ -1168,7 +1356,9 @@
             signOutBtn.addEventListener('click', async () => {
                 try {
                     logDebug('Signing out user');
+                    // Clear all state and authentication data
                     await auth.signOut();
+                    // Reset UI state
                     appContent.style.display = 'none';
                     authModal.style.display = 'flex';
                     isSignUp = false;
@@ -1177,8 +1367,11 @@
                     authToggle.textContent = 'Create an account';
                     nameField.style.display = 'none';
                     roleField.style.display = 'none';
+                    
+                    showAlert('Signed out successfully', 'success');
                 } catch (error) {
                     logDebug(`Sign out error: ${error.message}`);
+                    showAlert(`Error signing out: ${error.message}`, 'error');
                     console.error('Error signing out: ', error);
                 }
             });
@@ -1200,11 +1393,22 @@
                             logDebug(`User role: ${userData.role || 'not set'}`);
                         } else {
                             logDebug('User document does not exist in Firestore');
+                            // Create a basic user document if it doesn't exist
+                            await db.collection('users').doc(user.uid).set({
+                                displayName: user.displayName || '',
+                                email: user.email,
+                                role: 'User',
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
                         }
                     } catch (error) {
                         logDebug(`Error fetching user data: ${error.message}`);
+                        showAlert(`Error fetching user data: ${error.message}`, 'warning');
                         console.error("Error fetching user data:", error);
                     }
+                    
+                    // Load family photo if available
+                    loadFamilyPhoto();
                     
                     authModal.style.display = 'none';
                     appContent.style.display = 'block';
@@ -1214,6 +1418,8 @@
                     
                     // Load user's meals
                     loadMeals();
+                    
+                    showAlert(`Welcome, ${user.displayName || user.email}!`, 'success');
                 } else {
                     // User is signed out
                     logDebug('User is signed out');
@@ -1307,7 +1513,7 @@
                 
                 if (file) {
                     if (file.size > MAX_IMAGE_SIZE) {
-                        alert('Image size exceeds 2MB limit. Please choose a smaller image.');
+                        showAlert('Image size exceeds 2MB limit. Please choose a smaller image.', 'warning');
                         this.value = '';
                         return;
                     }
@@ -1355,43 +1561,27 @@
             
             // Set up advanced rating inputs in add/edit form
             function setupRatingListeners() {
-                // Taste rating
-                tasteRatingInputs.forEach(input => {
-                    input.addEventListener('change', function() {
-                        updateCriteriaRatingText('taste', this.value);
-                        updateOverallRating();
-                    });
-                });
+                function handleRatingClick(type, value) {
+                    // Find and check the corresponding radio button
+                    document.querySelector(`input[name="${type}Rating"][value="${value}"]`).checked = true;
+                    
+                    // Update the rating display text
+                    updateCriteriaRatingText(type, value);
+                    
+                    // Update the overall rating
+                    updateOverallRating();
+                }
                 
-                // Appearance rating
-                appearanceRatingInputs.forEach(input => {
-                    input.addEventListener('change', function() {
-                        updateCriteriaRatingText('appearance', this.value);
-                        updateOverallRating();
-                    });
-                });
-                
-                // Health rating
-                healthRatingInputs.forEach(input => {
-                    input.addEventListener('change', function() {
-                        updateCriteriaRatingText('health', this.value);
-                        updateOverallRating();
-                    });
-                });
-                
-                // Ease rating
-                easeRatingInputs.forEach(input => {
-                    input.addEventListener('change', function() {
-                        updateCriteriaRatingText('ease', this.value);
-                        updateOverallRating();
-                    });
-                });
-                
-                // Cost rating
-                costRatingInputs.forEach(input => {
-                    input.addEventListener('change', function() {
-                        updateCriteriaRatingText('cost', this.value);
-                        updateOverallRating();
+                // Setup click handlers for each star in each rating category
+                document.querySelectorAll('.criteria-star-rating label').forEach(label => {
+                    label.addEventListener('click', function() {
+                        // Extract type from the 'for' attribute (e.g., "taste-3" -> "taste")
+                        const forAttr = this.getAttribute('for');
+                        const type = forAttr.split('-')[0];
+                        // Extract value from the 'for' attribute (e.g., "taste-3" -> 3)
+                        const value = forAttr.split('-')[1];
+                        
+                        handleRatingClick(type, value);
                     });
                 });
             }
@@ -1569,11 +1759,13 @@
                     // Show thank you animation
                     showThankYouAnimation();
                     
+                    showAlert('Rating saved successfully', 'success');
+                    
                 } catch (error) {
                     logDebug(`Error saving rating: ${error.message}`);
                     console.error("Error saving rating:", error);
                     hideLoading();
-                    alert("Error saving your rating. Please try again.");
+                    showAlert(`Error saving rating: ${error.message}`, 'error');
                 }
             });
             
@@ -1713,7 +1905,7 @@
                     logDebug(`Error loading meals: ${error.message}`);
                     console.error("Error loading meals:", error);
                     hideLoading();
-                    alert("Error loading your meals. Please try again.");
+                    showAlert(`Error loading meals: ${error.message}`, 'error');
                 }
             }
 
@@ -1722,7 +1914,7 @@
                 e.preventDefault();
                 
                 if (!auth.currentUser) {
-                    alert('You must be signed in to add a meal.');
+                    showAlert('You must be signed in to add a meal.', 'warning');
                     return;
                 }
                 
@@ -1738,7 +1930,7 @@
                     
                     logDebug(`Creating new meal: ${mealName}`);
                     
-                    // Get detailed ratings
+                    // Gather ratings
                     const tasteRating = parseInt(document.querySelector('input[name="tasteRating"]:checked')?.value || 0);
                     const appearanceRating = parseInt(document.querySelector('input[name="appearanceRating"]:checked')?.value || 0);
                     const healthRating = parseInt(document.querySelector('input[name="healthRating"]:checked')?.value || 0);
@@ -1767,6 +1959,11 @@
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     };
                     
+                    // Before trying to upload the image, log some details for debugging
+                    if (currentImageFile) {
+                        logDebug(`Image to upload: ${currentImageFile.name}, size: ${currentImageFile.size} bytes`);
+                    }
+                    
                     // Upload image if exists
                     if (currentImageFile) {
                         logDebug('Uploading meal image');
@@ -1774,21 +1971,39 @@
                             const imagePath = `users/${auth.currentUser.uid}/meals/${Date.now()}_${currentImageFile.name}`;
                             const imageRef = storage.ref().child(imagePath);
                             
-                            // Upload the image
-                            await imageRef.put(currentImageFile);
+                            // Upload the image with additional logging
+                            logDebug(`Starting image upload to path: ${imagePath}`);
+                            const uploadTask = imageRef.put(currentImageFile);
+                            
+                            // Monitor upload progress
+                            uploadTask.on('state_changed', 
+                                (snapshot) => {
+                                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                                    logDebug(`Upload is ${progress}% complete`);
+                                    loadingText.textContent = `Uploading image... ${Math.round(progress)}%`;
+                                },
+                                (error) => {
+                                    // Handle unsuccessful upload
+                                    logDebug(`Image upload error: ${error.message}`);
+                                    throw error;
+                                }
+                            );
+                            
+                            // Wait for upload to complete
+                            await uploadTask;
                             
                             // Get the download URL
                             const imageUrl = await imageRef.getDownloadURL();
+                            logDebug(`Image uploaded successfully, URL: ${imageUrl}`);
                             
                             // Add image info to meal data
                             mealData.imagePath = imagePath;
                             mealData.imageUrl = imageUrl;
-                            
-                            logDebug('Image uploaded successfully');
                         } catch (error) {
                             logDebug(`Error uploading image: ${error.message}`);
+                            showAlert(`Error uploading image: ${error.message}. Saving meal without image.`, 'warning');
                             console.error("Error uploading image:", error);
-                            // Continue without the image if there's an error
+                            // Continue without the image
                         }
                     }
                     
@@ -1820,29 +2035,33 @@
                     await loadMeals();
                     
                     hideLoading();
+                    showAlert('Meal saved successfully!', 'success');
                     
                 } catch (error) {
                     logDebug(`Error adding meal: ${error.message}`);
                     console.error("Error adding meal:", error);
                     hideLoading();
-                    alert("Error saving your meal. Please try again.");
+                    showAlert(`Error saving meal: ${error.message}`, 'error');
                 }
             });
 
             // Reset all ratings
             function resetRatings() {
+                // Reset all radio buttons
                 document.querySelectorAll('input[name="tasteRating"]').forEach(input => input.checked = false);
                 document.querySelectorAll('input[name="appearanceRating"]').forEach(input => input.checked = false);
                 document.querySelectorAll('input[name="healthRating"]').forEach(input => input.checked = false);
                 document.querySelectorAll('input[name="easeRating"]').forEach(input => input.checked = false);
                 document.querySelectorAll('input[name="costRating"]').forEach(input => input.checked = false);
                 
+                // Reset rating texts
                 document.getElementById('tasteRatingText').textContent = 'Not rated';
                 document.getElementById('appearanceRatingText').textContent = 'Not rated';
                 document.getElementById('healthRatingText').textContent = 'Not rated';
                 document.getElementById('easeRatingText').textContent = 'Not rated';
                 document.getElementById('costRatingText').textContent = 'Not rated';
                 
+                // Reset overall rating
                 document.getElementById('overallRatingDisplay').textContent = 'Not Rated';
                 document.getElementById('overallRatingText').textContent = 'Average of all ratings';
                 document.getElementById('overallRating').value = 0;
@@ -1900,10 +2119,12 @@
                     // Reload meals to update the data
                     await loadMeals();
                     
+                    showAlert(isFavorite ? 'Removed from favorites' : 'Added to favorites', 'success');
+                    
                 } catch (error) {
                     logDebug(`Error updating favorite status: ${error.message}`);
                     console.error("Error updating favorite status:", error);
-                    alert("Error updating favorite status. Please try again.");
+                    showAlert(`Error updating favorite status: ${error.message}`, 'error');
                 }
             }
 
@@ -1952,55 +2173,19 @@
                         if (mealData.ratings) {
                             const ratings = mealData.ratings;
                             
-                            // Taste rating
-                            if (ratings.taste) {
-                                const tasteInput = document.getElementById(`taste-${ratings.taste}`);
-                                if (tasteInput) {
-                                    tasteInput.checked = true;
-                                    updateCriteriaRatingText('taste', ratings.taste);
-                                    ratingValues.taste = ratings.taste;
+                            // Set each rating and update UI
+                            const ratingTypes = ['taste', 'appearance', 'health', 'ease', 'cost'];
+                            ratingTypes.forEach(type => {
+                                if (ratings[type]) {
+                                    // Find and check the radio button
+                                    const input = document.getElementById(`${type}-${ratings[type]}`);
+                                    if (input) {
+                                        input.checked = true;
+                                        ratingValues[type] = ratings[type];
+                                        updateCriteriaRatingText(type, ratings[type]);
+                                    }
                                 }
-                            }
-                            
-                            // Appearance rating
-                            if (ratings.appearance) {
-                                const appearanceInput = document.getElementById(`appearance-${ratings.appearance}`);
-                                if (appearanceInput) {
-                                    appearanceInput.checked = true;
-                                    updateCriteriaRatingText('appearance', ratings.appearance);
-                                    ratingValues.appearance = ratings.appearance;
-                                }
-                            }
-                            
-                            // Health rating
-                            if (ratings.health) {
-                                const healthInput = document.getElementById(`health-${ratings.health}`);
-                                if (healthInput) {
-                                    healthInput.checked = true;
-                                    updateCriteriaRatingText('health', ratings.health);
-                                    ratingValues.health = ratings.health;
-                                }
-                            }
-                            
-                            // Ease rating
-                            if (ratings.ease) {
-                                const easeInput = document.getElementById(`ease-${ratings.ease}`);
-                                if (easeInput) {
-                                    easeInput.checked = true;
-                                    updateCriteriaRatingText('ease', ratings.ease);
-                                    ratingValues.ease = ratings.ease;
-                                }
-                            }
-                            
-                            // Cost rating
-                            if (ratings.cost) {
-                                const costInput = document.getElementById(`cost-${ratings.cost}`);
-                                if (costInput) {
-                                    costInput.checked = true;
-                                    updateCriteriaRatingText('cost', ratings.cost);
-                                    ratingValues.cost = ratings.cost;
-                                }
-                            }
+                            });
                             
                             // Update overall rating
                             updateOverallRating();
@@ -2145,17 +2330,53 @@
                                 await loadMeals();
                                 
                                 hideLoading();
+                                showAlert('Meal updated successfully!', 'success');
                                 
                             } catch (error) {
                                 logDebug(`Error updating meal: ${error.message}`);
                                 console.error("Error updating meal:", error);
                                 hideLoading();
-                                alert("Error updating your meal. Please try again.");
+                                showAlert(`Error updating meal: ${error.message}`, 'error');
                             }
                         });
                         
-                        // Re-setup rating listeners
+                        // Re-setup event listeners for the new form
                         setupRatingListeners();
+                        
+                        // Setup image upload events
+                        const imageInput = document.getElementById('mealImage');
+                        const removeImageBtn = document.getElementById('removeImage');
+                        
+                        imageInput.addEventListener('change', function(e) {
+                            const file = e.target.files[0];
+                            
+                            if (file) {
+                                if (file.size > MAX_IMAGE_SIZE) {
+                                    showAlert('Image size exceeds 2MB limit. Please choose a smaller image.', 'warning');
+                                    this.value = '';
+                                    return;
+                                }
+                                
+                                currentImageFile = file;
+                                
+                                const reader = new FileReader();
+                                reader.onload = function(event) {
+                                    imagePreview.src = event.target.result;
+                                    currentImageData = event.target.result;
+                                    imagePreviewContainer.classList.remove('hidden');
+                                    imageDropContainer.classList.add('hidden');
+                                    imageFileInfo.textContent = `${file.name} (${formatFileSize(file.size)})`;
+                                    removeImageBtn.classList.remove('hidden');
+                                };
+                                reader.readAsDataURL(file);
+                            } else {
+                                resetImageUpload();
+                            }
+                        });
+                        
+                        removeImageBtn.addEventListener('click', function() {
+                            resetImageUpload();
+                        });
                     }
                     
                     hideLoading();
@@ -2163,7 +2384,7 @@
                     logDebug(`Error getting meal for edit: ${error.message}`);
                     console.error("Error getting meal for edit:", error);
                     hideLoading();
-                    alert("Error loading meal details. Please try again.");
+                    showAlert(`Error loading meal details: ${error.message}`, 'error');
                 }
             }
 
@@ -2188,7 +2409,7 @@
                     e.preventDefault();
                     
                     if (!auth.currentUser) {
-                        alert('You must be signed in to add a meal.');
+                        showAlert('You must be signed in to add a meal.', 'warning');
                         return;
                     }
                     
@@ -2238,8 +2459,18 @@
                             
                             logDebug(`Uploading image: ${imagePath}`);
                             
-                            // Upload the image
-                            await imageRef.put(currentImageFile);
+                            // Monitor upload progress
+                            const uploadTask = imageRef.put(currentImageFile);
+                            uploadTask.on('state_changed', 
+                                (snapshot) => {
+                                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                                    logDebug(`Upload is ${progress}% complete`);
+                                    loadingText.textContent = `Uploading image... ${Math.round(progress)}%`;
+                                }
+                            );
+                            
+                            // Wait for upload to complete
+                            await uploadTask;
                             
                             // Get the download URL
                             const imageUrl = await imageRef.getDownloadURL();
@@ -2277,12 +2508,13 @@
                         await loadMeals();
                         
                         hideLoading();
+                        showAlert('Meal saved successfully!', 'success');
                         
                     } catch (error) {
                         logDebug(`Error adding meal: ${error.message}`);
                         console.error("Error adding meal:", error);
                         hideLoading();
-                        alert("Error saving your meal. Please try again: " + error.message);
+                        showAlert(`Error saving meal: ${error.message}`, 'error');
                     }
                 });
                 
@@ -2295,7 +2527,7 @@
                     
                     if (file) {
                         if (file.size > MAX_IMAGE_SIZE) {
-                            alert('Image size exceeds 2MB limit. Please choose a smaller image.');
+                            showAlert('Image size exceeds 2MB limit. Please choose a smaller image.', 'warning');
                             this.value = '';
                             return;
                         }
@@ -2367,12 +2599,13 @@
                             await loadMeals();
                             
                             hideLoading();
+                            showAlert('Meal deleted successfully', 'success');
                         }
                     } catch (error) {
                         logDebug(`Error deleting meal: ${error.message}`);
                         console.error("Error deleting meal:", error);
                         hideLoading();
-                        alert("Error deleting your meal. Please try again.");
+                        showAlert(`Error deleting meal: ${error.message}`, 'error');
                     }
                 }
             }

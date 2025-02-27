@@ -1,0 +1,2383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Meal Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-analytics-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-database-compat.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+        }
+        
+        .theme-bg-primary {
+            background-color: #F0F7FF;
+        }
+        
+        .theme-bg-secondary {
+            background-color: #FFF0F7;
+        }
+        
+        .theme-bg-tertiary {
+            background-color: #F7FFF0;
+        }
+        
+        .theme-bg-quaternary {
+            background-color: #FFF7F0;
+        }
+        
+        .theme-text-primary {
+            color: #5D5CDE;
+        }
+        
+        .theme-border-primary {
+            border-color: #5D5CDE;
+        }
+        
+        .theme-button-primary {
+            background-color: #5D5CDE;
+        }
+        
+        .theme-button-primary:hover {
+            background-color: #4A49CB;
+        }
+        
+        .theme-button-secondary {
+            background-color: #FF85AD;
+        }
+        
+        .theme-button-secondary:hover {
+            background-color: #FF6499;
+        }
+        
+        .theme-button-tertiary {
+            background-color: #85FF9E;
+        }
+        
+        .theme-button-tertiary:hover {
+            background-color: #64FF85;
+        }
+        
+        /* For tablets */
+        @media (min-width: 640px) and (max-width: 1023px) {
+            .tablet-specific {
+                padding: 1.5rem !important;
+            }
+            
+            .tablet-col-span-1 {
+                grid-column: span 1 / span 1 !important;
+            }
+        }
+        
+        /* For mobile */
+        @media (max-width: 639px) {
+            .mobile-py-2 {
+                padding-top: 0.5rem !important;
+                padding-bottom: 0.5rem !important;
+            }
+            
+            .mobile-px-2 {
+                padding-left: 0.5rem !important;
+                padding-right: 0.5rem !important;
+            }
+        }
+        
+        /* Animation containers */
+        .thank-you-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            background-color: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .thank-you-container.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .thank-you-box {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            max-width: 80%;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        
+        .thank-you-container.active .thank-you-box {
+            transform: scale(1);
+        }
+        
+        /* Star rating */
+        .star-rating {
+            display: inline-flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+        
+        .star-rating input {
+            display: none;
+        }
+        
+        .star-rating label {
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="%23D1D5DB"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 24px;
+        }
+        
+        .star-rating input:checked ~ label {
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="%23FFD700"/></svg>');
+        }
+        
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="%23FFD700"/></svg>');
+        }
+        
+        .heart-icon {
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .heart-icon:hover {
+            transform: scale(1.2);
+        }
+        
+        .heart-icon.favorited {
+            fill: #FF4B8B;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+    <!-- Login/Signup Modal -->
+    <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl font-bold text-purple-700 dark:text-purple-400 mb-2">Family Meal Tracker</h1>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Created by Keith Cho</p>
+            </div>
+            
+            <h2 class="text-xl font-semibold mb-4 text-center" id="authTitle">Sign In</h2>
+            
+            <div id="authError" class="hidden mb-4 p-3 bg-red-100 text-red-700 rounded-lg"></div>
+            
+            <form id="authForm">
+                <div class="mb-4" id="nameField" style="display: none;">
+                    <label for="displayName" class="block mb-2 text-sm font-medium">Your Name</label>
+                    <input type="text" id="displayName" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                </div>
+                
+                <div class="mb-4">
+                    <label for="email" class="block mb-2 text-sm font-medium">Email</label>
+                    <input type="email" id="email" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="password" class="block mb-2 text-sm font-medium">Password</label>
+                    <input type="password" id="password" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
+                </div>
+                
+                <button type="submit" id="authSubmit" class="w-full text-white theme-button-primary focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-base px-5 py-2.5 text-center mb-4">Sign In</button>
+                
+                <div class="flex justify-center">
+                    <button type="button" id="authToggle" class="text-sm text-purple-600 hover:underline">Create an account</button>
+                </div>
+                
+                <div class="mt-4 text-center">
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Or sign in with:</p>
+                    <button type="button" id="googleSignIn" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 flex items-center justify-center space-x-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        <span>Google</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div class="container mx-auto px-4 py-6 max-w-6xl" id="appContent" style="display: none;">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-2">
+            <div>
+                <h1 class="text-3xl font-bold text-purple-700 dark:text-purple-400">Family Meal Tracker</h1>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Created by Keith Cho</p>
+            </div>
+            <div class="flex items-center space-x-2">
+                <span id="userDisplayName" class="text-sm font-medium"></span>
+                <button id="signOutBtn" class="text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-700">Sign Out</button>
+            </div>
+        </div>
+        
+        <!-- Thank You Animation Container -->
+        <div id="thankYouContainer" class="thank-you-container">
+            <div class="thank-you-box animate__animated animate__bounceIn">
+                <div class="text-7xl mb-4">🎉</div>
+                <h2 class="text-2xl font-bold text-purple-600 mb-2">Thank You!</h2>
+                <p class="text-gray-600 mb-4">Your meal has been successfully recorded.</p>
+                <button id="thankYouClose" class="text-white theme-button-primary focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-base px-5 py-2.5">Close</button>
+            </div>
+        </div>
+        
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display: none;">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mb-3"></div>
+                <p class="text-gray-700 dark:text-gray-300" id="loadingText">Loading...</p>
+            </div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="mb-6">
+            <ul class="flex flex-wrap -mb-px border-b border-gray-300 dark:border-gray-700" id="tabs" role="tablist">
+                <li class="mr-2" role="presentation">
+                    <button class="inline-block py-4 px-4 text-base font-medium text-center rounded-t-lg border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 active theme-text-primary" 
+                            id="add-tab" data-tabs-target="#add" type="button" role="tab" aria-controls="add" aria-selected="true">
+                        Add Meal
+                    </button>
+                </li>
+                <li class="mr-2" role="presentation">
+                    <button class="inline-block py-4 px-4 text-base font-medium text-center rounded-t-lg border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600" 
+                            id="meals-tab" data-tabs-target="#meals" type="button" role="tab" aria-controls="meals" aria-selected="false">
+                        My Meals
+                    </button>
+                </li>
+                <li class="mr-2" role="presentation">
+                    <button class="inline-block py-4 px-4 text-base font-medium text-center rounded-t-lg border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600" 
+                            id="favorites-tab" data-tabs-target="#favorites" type="button" role="tab" aria-controls="favorites" aria-selected="false">
+                        Favorites
+                    </button>
+                </li>
+                <li class="mr-2" role="presentation">
+                    <button class="inline-block py-4 px-4 text-base font-medium text-center rounded-t-lg border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600" 
+                            id="stats-tab" data-tabs-target="#stats" type="button" role="tab" aria-controls="stats" aria-selected="false">
+                        Statistics
+                    </button>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Tab Contents -->
+        <div id="tabContents">
+            <!-- Add Meal Tab -->
+            <div class="block" id="add" role="tabpanel" aria-labelledby="add-tab">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md theme-bg-primary dark:bg-gray-800">
+                    <h2 class="text-xl font-semibold mb-4">Add New Meal</h2>
+                    <form id="mealForm">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="mb-4">
+                                <label for="mealName" class="block mb-2 text-sm font-medium">Meal Name</label>
+                                <input type="text" id="mealName" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="mealCategory" class="block mb-2 text-sm font-medium">Meal Time</label>
+                                <select id="mealCategory" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                                    <option value="" disabled selected>Select meal time</option>
+                                    <option value="Breakfast">Breakfast</option>
+                                    <option value="Lunch">Lunch</option>
+                                    <option value="Dinner">Dinner</option>
+                                    <option value="Snack">Snack</option>
+                                    <option value="Dessert">Dessert</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="proteinType" class="block mb-2 text-sm font-medium">Protein Type</label>
+                                <select id="proteinType" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <option value="" selected>None/Other</option>
+                                    <option value="Beef">Beef</option>
+                                    <option value="Chicken">Chicken</option>
+                                    <option value="Pork">Pork</option>
+                                    <option value="Fish">Fish</option>
+                                    <option value="Seafood">Seafood</option>
+                                    <option value="Lamb">Lamb</option>
+                                    <option value="Turkey">Turkey</option>
+                                    <option value="Tofu">Tofu</option>
+                                    <option value="Vegetarian">Vegetarian</option>
+                                    <option value="Vegan">Vegan</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="cuisineStyle" class="block mb-2 text-sm font-medium">Cuisine Style</label>
+                                <select id="cuisineStyle" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <option value="" selected>None/Other</option>
+                                    <optgroup label="Cuisine">
+                                        <option value="American">American</option>
+                                        <option value="Italian">Italian</option>
+                                        <option value="Mexican">Mexican</option>
+                                        <option value="Chinese">Chinese</option>
+                                        <option value="Japanese">Japanese</option>
+                                        <option value="Korean">Korean</option>
+                                        <option value="Thai">Thai</option>
+                                        <option value="Indian">Indian</option>
+                                        <option value="Mediterranean">Mediterranean</option>
+                                        <option value="French">French</option>
+                                        <option value="Spanish">Spanish</option>
+                                        <option value="Greek">Greek</option>
+                                        <option value="Middle Eastern">Middle Eastern</option>
+                                    </optgroup>
+                                    <optgroup label="Dish Type">
+                                        <option value="Rice">Rice</option>
+                                        <option value="Noodle">Noodle</option>
+                                        <option value="Pasta">Pasta</option>
+                                        <option value="Salad">Salad</option>
+                                        <option value="Soup">Soup</option>
+                                        <option value="Sandwich">Sandwich</option>
+                                        <option value="Stir Fry">Stir Fry</option>
+                                        <option value="Baked">Baked</option>
+                                        <option value="Grilled">Grilled</option>
+                                        <option value="Stew">Stew</option>
+                                        <option value="Casserole">Casserole</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="mealDate" class="block mb-2 text-sm font-medium">Date</label>
+                                <input type="date" id="mealDate" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                            </div>
+                            
+                            <!-- Rating Section -->
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-medium">Rating</label>
+                                <div class="star-rating">
+                                    <input type="radio" id="star5" name="rating" value="5" />
+                                    <label for="star5" title="5 stars"></label>
+                                    <input type="radio" id="star4" name="rating" value="4" />
+                                    <label for="star4" title="4 stars"></label>
+                                    <input type="radio" id="star3" name="rating" value="3" />
+                                    <label for="star3" title="3 stars"></label>
+                                    <input type="radio" id="star2" name="rating" value="2" />
+                                    <label for="star2" title="2 stars"></label>
+                                    <input type="radio" id="star1" name="rating" value="1" />
+                                    <label for="star1" title="1 star"></label>
+                                </div>
+                                <span id="ratingText" class="text-sm text-gray-500 dark:text-gray-400 ml-2">Not rated</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Image Upload Section -->
+                        <div class="mb-4">
+                            <label class="block mb-2 text-sm font-medium">Meal Image</label>
+                            <div class="flex items-center justify-center w-full">
+                                <label for="mealImage" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500">
+                                    <div id="imagePreviewContainer" class="hidden w-full h-full flex items-center justify-center overflow-hidden">
+                                        <img id="imagePreview" src="#" alt="Image preview" class="max-h-full max-w-full object-cover">
+                                    </div>
+                                    <div id="imageDropContainer" class="flex flex-col items-center justify-center pt-5 pb-6">
+                                        <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                        </svg>
+                                        <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG or JPEG (MAX. 2MB)</p>
+                                    </div>
+                                    <input id="mealImage" type="file" class="hidden" accept="image/png, image/jpeg, image/jpg" />
+                                </label>
+                            </div>
+                            <div class="flex mt-2 justify-between">
+                                <div class="text-sm text-gray-500" id="imageFileInfo"></div>
+                                <button type="button" id="removeImage" class="text-sm text-red-600 hover:underline hidden">Remove image</button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="mealNotes" class="block mb-2 text-sm font-medium">Notes (Ingredients, Recipe, etc.)</label>
+                            <textarea id="mealNotes" rows="4" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="text-white theme-button-primary focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-base px-5 py-2.5 text-center">Save Meal</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- My Meals Tab -->
+            <div class="hidden" id="meals" role="tabpanel" aria-labelledby="meals-tab">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md theme-bg-secondary dark:bg-gray-800">
+                    <div class="mb-4">
+                        <h2 class="text-xl font-semibold mb-4">My Meal History</h2>
+                        <div class="flex flex-col lg:flex-row gap-4 mb-4">
+                            <!-- Enhanced search functionality -->
+                            <div class="flex-1">
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                                        </svg>
+                                    </div>
+                                    <input type="text" id="mealSearch" placeholder="Search meal names, ingredients or recipes..." class="text-base block w-full p-2.5 pl-10 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                                </div>
+                                <div class="flex mt-2 gap-2 flex-wrap">
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="searchType" value="all" class="text-purple-600" checked>
+                                        <span class="ml-1 text-sm text-gray-700 dark:text-gray-300">All</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="searchType" value="name" class="text-purple-600">
+                                        <span class="ml-1 text-sm text-gray-700 dark:text-gray-300">Name</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="searchType" value="recipe" class="text-purple-600">
+                                        <span class="ml-1 text-sm text-gray-700 dark:text-gray-300">Recipe & Notes</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Filters -->
+                            <div class="w-full lg:w-72">
+                                <div class="grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-1">
+                                    <div class="mb-2">
+                                        <label for="filterCategory" class="block mb-1 text-sm font-medium">Meal Time:</label>
+                                        <select id="filterCategory" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                            <option value="All">All Times</option>
+                                            <option value="Breakfast">Breakfast</option>
+                                            <option value="Lunch">Lunch</option>
+                                            <option value="Dinner">Dinner</option>
+                                            <option value="Snack">Snack</option>
+                                            <option value="Dessert">Dessert</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-2">
+                                        <label for="filterProtein" class="block mb-1 text-sm font-medium">Protein Type:</label>
+                                        <select id="filterProtein" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                            <option value="All">All Proteins</option>
+                                            <option value="Beef">Beef</option>
+                                            <option value="Chicken">Chicken</option>
+                                            <option value="Pork">Pork</option>
+                                            <option value="Fish">Fish</option>
+                                            <option value="Seafood">Seafood</option>
+                                            <option value="Lamb">Lamb</option>
+                                            <option value="Turkey">Turkey</option>
+                                            <option value="Tofu">Tofu</option>
+                                            <option value="Vegetarian">Vegetarian</option>
+                                            <option value="Vegan">Vegan</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-2">
+                                        <label for="filterCuisine" class="block mb-1 text-sm font-medium">Cuisine Style:</label>
+                                        <select id="filterCuisine" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                            <option value="All">All Cuisines</option>
+                                            <optgroup label="Cuisine">
+                                                <option value="American">American</option>
+                                                <option value="Italian">Italian</option>
+                                                <option value="Mexican">Mexican</option>
+                                                <option value="Chinese">Chinese</option>
+                                                <option value="Japanese">Japanese</option>
+                                                <option value="Korean">Korean</option>
+                                                <option value="Thai">Thai</option>
+                                                <option value="Indian">Indian</option>
+                                                <option value="Mediterranean">Mediterranean</option>
+                                                <option value="French">French</option>
+                                                <option value="Spanish">Spanish</option>
+                                                <option value="Greek">Greek</option>
+                                                <option value="Middle Eastern">Middle Eastern</option>
+                                            </optgroup>
+                                            <optgroup label="Dish Type">
+                                                <option value="Rice">Rice</option>
+                                                <option value="Noodle">Noodle</option>
+                                                <option value="Pasta">Pasta</option>
+                                                <option value="Salad">Salad</option>
+                                                <option value="Soup">Soup</option>
+                                                <option value="Sandwich">Sandwich</option>
+                                                <option value="Stir Fry">Stir Fry</option>
+                                                <option value="Baked">Baked</option>
+                                                <option value="Grilled">Grilled</option>
+                                                <option value="Stew">Stew</option>
+                                                <option value="Casserole">Casserole</option>
+                                            </optgroup>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-2">
+                                        <label for="filterRating" class="block mb-1 text-sm font-medium">Rating:</label>
+                                        <select id="filterRating" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                            <option value="All">All Ratings</option>
+                                            <option value="5">★★★★★ (5)</option>
+                                            <option value="4">★★★★☆ (4)</option>
+                                            <option value="3">★★★☆☆ (3)</option>
+                                            <option value="2">★★☆☆☆ (2)</option>
+                                            <option value="1">★☆☆☆☆ (1)</option>
+                                            <option value="0">Not Rated</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="searchResults" class="mb-4 p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hidden">
+                        <p id="searchResultsText" class="text-sm text-purple-800 dark:text-purple-200"></p>
+                    </div>
+                    
+                    <div id="mealList" class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <div class="text-center py-4 text-gray-500 italic">No meals recorded yet. Add your first meal!</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Favorites Tab -->
+            <div class="hidden" id="favorites" role="tabpanel" aria-labelledby="favorites-tab">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md theme-bg-tertiary dark:bg-gray-800">
+                    <h2 class="text-xl font-semibold mb-4">My Favorite Meals</h2>
+                    
+                    <div class="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                            <span id="favoriteCount">0</span> meals in your favorites
+                        </div>
+                        
+                        <div class="flex items-center gap-2">
+                            <label for="favoritesSort" class="text-sm font-medium">Sort by:</label>
+                            <select id="favoritesSort" class="text-sm bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                <option value="dateDesc">Date (Newest First)</option>
+                                <option value="dateAsc">Date (Oldest First)</option>
+                                <option value="nameAsc">Name (A-Z)</option>
+                                <option value="nameDesc">Name (Z-A)</option>
+                                <option value="ratingDesc">Rating (High to Low)</option>
+                                <option value="ratingAsc">Rating (Low to High)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="favoritesList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="text-center py-4 text-gray-500 italic col-span-3">No favorite meals yet. Add meals to your favorites!</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Statistics Tab -->
+            <div class="hidden" id="stats" role="tabpanel" aria-labelledby="stats-tab">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6 theme-bg-quaternary dark:bg-gray-800">
+                    <h2 class="text-xl font-semibold mb-4">Meal Statistics</h2>
+                    
+                    <div class="mb-6">
+                        <label for="statsPeriod" class="block mb-2 text-sm font-medium">View Statistics For:</label>
+                        <select id="statsPeriod" class="text-base bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                            <option value="all">All Time</option>
+                        </select>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg tablet-specific">
+                            <h3 class="text-lg font-medium mb-2">Meals by Category</h3>
+                            <div class="h-80">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg tablet-specific">
+                            <h3 class="text-lg font-medium mb-2">Meals by Day</h3>
+                            <div class="h-80">
+                                <canvas id="timeChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 grid grid-cols-1 gap-6">
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg tablet-specific">
+                            <h3 class="text-lg font-medium mb-2">Meals by Rating</h3>
+                            <div class="h-60">
+                                <canvas id="ratingChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h3 class="text-lg font-medium mb-3">Summary</h3>
+                        <div id="statsSummary" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div class="bg-purple-100 dark:bg-purple-900 p-3 rounded-lg">
+                                <p class="text-sm text-gray-600 dark:text-gray-300">Total Meals</p>
+                                <p id="totalMeals" class="text-2xl font-bold text-purple-700 dark:text-purple-400">0</p>
+                            </div>
+                            <div class="bg-blue-100 dark:bg-blue-900 p-3 rounded-lg">
+                                <p class="text-sm text-gray-600 dark:text-gray-300">Most Common</p>
+                                <p id="mostCommon" class="text-2xl font-bold text-blue-700 dark:text-blue-400">None</p>
+                            </div>
+                            <div class="bg-green-100 dark:bg-green-900 p-3 rounded-lg">
+                                <p class="text-sm text-gray-600 dark:text-gray-300">Avg. Rating</p>
+                                <p id="avgRating" class="text-2xl font-bold text-green-700 dark:text-green-400">N/A</p>
+                            </div>
+                            <div class="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-lg">
+                                <p class="text-sm text-gray-600 dark:text-gray-300">Total Favorites</p>
+                                <p id="totalFavorites" class="text-2xl font-bold text-yellow-700 dark:text-yellow-400">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rating Modal -->
+    <div id="ratingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
+            <h2 class="text-xl font-semibold mb-4 text-center">Rate this meal</h2>
+            
+            <div class="mb-4 text-center">
+                <h3 id="ratingMealName" class="text-lg font-medium mb-2"></h3>
+                <div class="rating-stars mb-4 flex justify-center text-3xl">
+                    <span data-rating="1" class="star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400">★</span>
+                    <span data-rating="2" class="star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400">★</span>
+                    <span data-rating="3" class="star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400">★</span>
+                    <span data-rating="4" class="star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400">★</span>
+                    <span data-rating="5" class="star cursor-pointer text-gray-300 dark:text-gray-600 hover:text-yellow-400">★</span>
+                </div>
+                <p id="ratingDescription" class="text-gray-600 dark:text-gray-400">Click to rate</p>
+            </div>
+            
+            <div class="flex justify-between">
+                <button id="ratingCancel" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-lg">Cancel</button>
+                <button id="ratingSave" class="px-4 py-2 theme-button-primary hover:bg-indigo-700 text-white rounded-lg disabled:opacity-50" disabled>Save Rating</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.js"></script>
+    <script>
+        // Firebase Configuration - Updated with your real Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAQ23N_b9d3HXoFZjLuyWpaSYieaQj1iVQ",
+            authDomain: "family-meal-tracker.firebaseapp.com",
+            databaseURL: "https://family-meal-tracker-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "family-meal-tracker",
+            storageBucket: "family-meal-tracker.firebasestorage.app",
+            messagingSenderId: "347030000985",
+            appId: "1:347030000985:web:120168d9840e1abbbf2848",
+            measurementId: "G-LYGM70REWG"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        const storage = firebase.storage();
+        const analytics = firebase.analytics();
+        const rtdb = firebase.database();
+        
+        // Authentication variables and elements
+        const authModal = document.getElementById('authModal');
+        const authForm = document.getElementById('authForm');
+        const authTitle = document.getElementById('authTitle');
+        const authSubmit = document.getElementById('authSubmit');
+        const authToggle = document.getElementById('authToggle');
+        const nameField = document.getElementById('nameField');
+        const authError = document.getElementById('authError');
+        const appContent = document.getElementById('appContent');
+        const signOutBtn = document.getElementById('signOutBtn');
+        const userDisplayName = document.getElementById('userDisplayName');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const loadingText = document.getElementById('loadingText');
+        const googleSignInBtn = document.getElementById('googleSignIn');
+        const thankYouContainer = document.getElementById('thankYouContainer');
+        const thankYouClose = document.getElementById('thankYouClose');
+        
+        // Rating variables and elements
+        const ratingInputs = document.querySelectorAll('input[name="rating"]');
+        const ratingText = document.getElementById('ratingText');
+        const ratingModal = document.getElementById('ratingModal');
+        const ratingMealName = document.getElementById('ratingMealName');
+        const ratingStars = document.querySelectorAll('.rating-stars .star');
+        const ratingDescription = document.getElementById('ratingDescription');
+        const ratingCancel = document.getElementById('ratingCancel');
+        const ratingSave = document.getElementById('ratingSave');
+        
+        // Global variables
+        let currentMealBeingRated = null;
+        let selectedRating = 0;
+        
+        // Thank you animation
+        thankYouClose.addEventListener('click', function() {
+            thankYouContainer.classList.remove('active');
+            setTimeout(() => {
+                thankYouContainer.querySelector('.thank-you-box').classList.remove('animate__bounceIn');
+            }, 300);
+        });
+        
+        // Show thank you animation
+        function showThankYouAnimation() {
+            thankYouContainer.classList.add('active');
+            thankYouContainer.querySelector('.thank-you-box').classList.add('animate__bounceIn');
+            
+            // Auto close after 3 seconds
+            setTimeout(() => {
+                thankYouContainer.classList.remove('active');
+                setTimeout(() => {
+                    thankYouContainer.querySelector('.thank-you-box').classList.remove('animate__bounceIn');
+                }, 300);
+            }, 3000);
+        }
+        
+        // Authentication state
+        let isSignUp = false;
+        
+        // Toggle between sign in and sign up
+        authToggle.addEventListener('click', () => {
+            isSignUp = !isSignUp;
+            if (isSignUp) {
+                authTitle.textContent = 'Create Account';
+                authSubmit.textContent = 'Sign Up';
+                authToggle.textContent = 'Already have an account? Sign In';
+                nameField.style.display = 'block';
+            } else {
+                authTitle.textContent = 'Sign In';
+                authSubmit.textContent = 'Sign In';
+                authToggle.textContent = 'Create an account';
+                nameField.style.display = 'none';
+            }
+            authError.classList.add('hidden');
+        });
+        
+        // Handle Google Sign In
+        googleSignInBtn.addEventListener('click', async () => {
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                await auth.signInWithPopup(provider);
+            } catch (error) {
+                authError.textContent = error.message;
+                authError.classList.remove('hidden');
+            }
+        });
+        
+        // Handle authentication form submission
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const displayName = document.getElementById('displayName').value;
+            
+            showLoading('Authenticating...');
+            
+            try {
+                let userCredential;
+                
+                if (isSignUp) {
+                    // Create new user
+                    userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    
+                    // Update profile with display name
+                    await userCredential.user.updateProfile({
+                        displayName: displayName
+                    });
+                } else {
+                    // Sign in existing user
+                    userCredential = await auth.signInWithEmailAndPassword(email, password);
+                }
+                
+                hideLoading();
+                authModal.style.display = 'none';
+                appContent.style.display = 'block';
+                
+                // Reset form
+                authForm.reset();
+                
+            } catch (error) {
+                hideLoading();
+                authError.textContent = error.message;
+                authError.classList.remove('hidden');
+            }
+        });
+        
+        // Handle sign out
+        signOutBtn.addEventListener('click', async () => {
+            try {
+                await auth.signOut();
+                appContent.style.display = 'none';
+                authModal.style.display = 'flex';
+                isSignUp = false;
+                authTitle.textContent = 'Sign In';
+                authSubmit.textContent = 'Sign In';
+                authToggle.textContent = 'Create an account';
+                nameField.style.display = 'none';
+            } catch (error) {
+                console.error('Error signing out: ', error);
+            }
+        });
+        
+        // Auth state observer
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // User is signed in
+                userDisplayName.textContent = user.displayName || user.email;
+                authModal.style.display = 'none';
+                appContent.style.display = 'block';
+                
+                // Log analytics event
+                analytics.logEvent('login');
+                
+                // Load user's meals
+                loadMeals();
+            } else {
+                // User is signed out
+                authModal.style.display = 'flex';
+                appContent.style.display = 'none';
+            }
+        });
+        
+        // Show/hide loading indicator
+        function showLoading(message = 'Loading...') {
+            loadingText.textContent = message;
+            loadingIndicator.style.display = 'flex';
+        }
+        
+        function hideLoading() {
+            loadingIndicator.style.display = 'none';
+        }
+        
+        // Initialize tabs
+        const tabElements = [
+            {
+                id: 'add',
+                triggerEl: document.getElementById('add-tab'),
+                targetEl: document.getElementById('add')
+            },
+            {
+                id: 'meals',
+                triggerEl: document.getElementById('meals-tab'),
+                targetEl: document.getElementById('meals')
+            },
+            {
+                id: 'favorites',
+                triggerEl: document.getElementById('favorites-tab'),
+                targetEl: document.getElementById('favorites')
+            },
+            {
+                id: 'stats',
+                triggerEl: document.getElementById('stats-tab'),
+                targetEl: document.getElementById('stats')
+            }
+        ];
+
+        // Initialize tabs
+        const tabs = [];
+        tabElements.forEach(tab => {
+            tab.triggerEl.addEventListener('click', () => {
+                tabElements.forEach(t => {
+                    t.targetEl.classList.add('hidden');
+                    t.triggerEl.classList.remove('active', 'theme-text-primary', 'theme-border-primary');
+                    t.triggerEl.classList.add('border-transparent');
+                });
+                tab.targetEl.classList.remove('hidden');
+                tab.triggerEl.classList.add('active', 'theme-text-primary', 'theme-border-primary');
+                
+                // Track tab view in analytics
+                analytics.logEvent('tab_view', { tab_name: tab.id });
+                
+                // Update stats when switching to stats tab
+                if (tab.id === 'stats') {
+                    updateStats();
+                }
+                
+                // Update favorites when switching to favorites tab
+                if (tab.id === 'favorites') {
+                    renderFavorites();
+                }
+            });
+        });
+
+        // Set today's date as default
+        document.getElementById('mealDate').valueAsDate = new Date();
+
+        // Variables for image handling
+        let currentImageData = null;
+        let currentImageFile = null;
+        const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
+        
+        // Image input handling
+        const imageInput = document.getElementById('mealImage');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        const imageDropContainer = document.getElementById('imageDropContainer');
+        const imagePreview = document.getElementById('imagePreview');
+        const imageFileInfo = document.getElementById('imageFileInfo');
+        const removeImageBtn = document.getElementById('removeImage');
+        
+        // Handle image upload preview
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            
+            if (file) {
+                if (file.size > MAX_IMAGE_SIZE) {
+                    alert('Image size exceeds 2MB limit. Please choose a smaller image.');
+                    this.value = '';
+                    return;
+                }
+                
+                currentImageFile = file;
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imagePreview.src = event.target.result;
+                    currentImageData = event.target.result;
+                    imagePreviewContainer.classList.remove('hidden');
+                    imageDropContainer.classList.add('hidden');
+                    imageFileInfo.textContent = `${file.name} (${formatFileSize(file.size)})`;
+                    removeImageBtn.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                resetImageUpload();
+            }
+        });
+        
+        // Remove image button
+        removeImageBtn.addEventListener('click', function() {
+            resetImageUpload();
+        });
+        
+        // Reset image upload
+        function resetImageUpload() {
+            imageInput.value = '';
+            imagePreview.src = '#';
+            currentImageData = null;
+            currentImageFile = null;
+            imagePreviewContainer.classList.add('hidden');
+            imageDropContainer.classList.remove('hidden');
+            imageFileInfo.textContent = '';
+            removeImageBtn.classList.add('hidden');
+        }
+        
+        // Format file size helper
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' bytes';
+            else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            else return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+        
+        // Handle rating inputs in add/edit form
+        ratingInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                updateRatingText(this.value);
+            });
+        });
+        
+        function updateRatingText(rating) {
+            if (!rating) {
+                ratingText.textContent = 'Not rated';
+                return;
+            }
+            
+            const descriptions = {
+                1: 'Poor',
+                2: 'Fair',
+                3: 'Good',
+                4: 'Very Good',
+                5: 'Excellent'
+            };
+            
+            const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+            ratingText.textContent = `${stars} (${descriptions[rating]})`;
+        }
+        
+        // Rating modal functionality
+        ratingStars.forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = parseInt(this.dataset.rating);
+                selectedRating = rating;
+                
+                // Update star colors
+                ratingStars.forEach((s, i) => {
+                    if (i < rating) {
+                        s.classList.add('text-yellow-400');
+                        s.classList.remove('text-gray-300', 'dark:text-gray-600');
+                    } else {
+                        s.classList.remove('text-yellow-400');
+                        s.classList.add('text-gray-300', 'dark:text-gray-600');
+                    }
+                });
+                
+                // Update description
+                const descriptions = {
+                    1: 'Poor',
+                    2: 'Fair',
+                    3: 'Good',
+                    4: 'Very Good',
+                    5: 'Excellent'
+                };
+                
+                ratingDescription.textContent = descriptions[rating];
+                ratingSave.disabled = false;
+            });
+        });
+        
+        // Cancel rating
+        ratingCancel.addEventListener('click', function() {
+            closeRatingModal();
+        });
+        
+        // Save rating
+        ratingSave.addEventListener('click', async function() {
+            if (!currentMealBeingRated || !selectedRating) return;
+            
+            showLoading('Saving rating...');
+            
+            try {
+                // Update the meal in Firestore
+                await db.collection('users')
+                    .doc(auth.currentUser.uid)
+                    .collection('meals')
+                    .doc(currentMealBeingRated)
+                    .update({
+                        rating: selectedRating,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                
+                // Log rating event
+                analytics.logEvent('rate_meal', {
+                    rating: selectedRating
+                });
+                
+                // Reload meals and close modal
+                await loadMeals();
+                closeRatingModal();
+                hideLoading();
+                
+                // Show thank you animation
+                showThankYouAnimation();
+                
+            } catch (error) {
+                console.error("Error saving rating:", error);
+                hideLoading();
+                alert("Error saving your rating. Please try again.");
+            }
+        });
+        
+        // Open rating modal
+        function openRatingModal(mealId, mealName, currentRating = 0) {
+            currentMealBeingRated = mealId;
+            ratingMealName.textContent = mealName;
+            selectedRating = currentRating;
+            
+            // Reset star UI
+            ratingStars.forEach((star, i) => {
+                if (i < currentRating) {
+                    star.classList.add('text-yellow-400');
+                    star.classList.remove('text-gray-300', 'dark:text-gray-600');
+                } else {
+                    star.classList.remove('text-yellow-400');
+                    star.classList.add('text-gray-300', 'dark:text-gray-600');
+                }
+            });
+            
+            // Set description
+            if (currentRating > 0) {
+                const descriptions = {
+                    1: 'Poor',
+                    2: 'Fair',
+                    3: 'Good',
+                    4: 'Very Good',
+                    5: 'Excellent'
+                };
+                ratingDescription.textContent = descriptions[currentRating];
+                ratingSave.disabled = false;
+            } else {
+                ratingDescription.textContent = 'Click to rate';
+                ratingSave.disabled = true;
+            }
+            
+            ratingModal.classList.remove('hidden');
+        }
+        
+        // Close rating modal
+        function closeRatingModal() {
+            ratingModal.classList.add('hidden');
+            currentMealBeingRated = null;
+            selectedRating = 0;
+        }
+
+        // Array to store fetched meals
+        let meals = [];
+
+        // Load meals from Firestore
+        async function loadMeals() {
+            if (!auth.currentUser) return;
+            
+            showLoading('Loading your meals...');
+            
+            try {
+                const snapshot = await db.collection('users')
+                    .doc(auth.currentUser.uid)
+                    .collection('meals')
+                    .orderBy('date', 'desc')
+                    .get();
+                    
+                meals = [];
+                
+                const mealPromises = snapshot.docs.map(async doc => {
+                    const mealData = doc.data();
+                    const meal = {
+                        id: doc.id,
+                        name: mealData.name,
+                        category: mealData.category,
+                        proteinType: mealData.proteinType || '',
+                        cuisineStyle: mealData.cuisineStyle || '',
+                        date: mealData.date,
+                        notes: mealData.notes || '',
+                        rating: mealData.rating || 0,
+                        favorite: mealData.favorite || false,
+                        image: null
+                    };
+                    
+                    // Load image if exists
+                    if (mealData.imageUrl) {
+                        meal.image = mealData.imageUrl;
+                    } else if (mealData.imagePath) {
+                        try {
+                            const imageUrl = await storage.ref(mealData.imagePath).getDownloadURL();
+                            meal.image = imageUrl;
+                            
+                            // Update with the URL for future use
+                            await db.collection('users')
+                                .doc(auth.currentUser.uid)
+                                .collection('meals')
+                                .doc(doc.id)
+                                .update({
+                                    imageUrl: imageUrl
+                                });
+                        } catch (error) {
+                            console.error("Error loading image:", error);
+                        }
+                    }
+                    
+                    return meal;
+                });
+                
+                meals = await Promise.all(mealPromises);
+                renderMealsWithFilters();
+                renderFavorites();
+                updateStats();
+                
+                hideLoading();
+            } catch (error) {
+                console.error("Error loading meals:", error);
+                hideLoading();
+                alert("Error loading your meals. Please try again.");
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('mealForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!auth.currentUser) {
+                alert('You must be signed in to add a meal.');
+                return;
+            }
+            
+            showLoading('Saving your meal...');
+            
+            try {
+                const mealName = document.getElementById('mealName').value;
+                const mealCategory = document.getElementById('mealCategory').value;
+                const proteinType = document.getElementById('proteinType').value;
+                const cuisineStyle = document.getElementById('cuisineStyle').value;
+                const mealDate = document.getElementById('mealDate').value;
+                const mealNotes = document.getElementById('mealNotes').value;
+                const rating = parseInt(document.querySelector('input[name="rating"]:checked')?.value || 0);
+                
+                // Create meal object for Firestore
+                const mealData = {
+                    name: mealName,
+                    category: mealCategory,
+                    proteinType: proteinType,
+                    cuisineStyle: cuisineStyle,
+                    date: mealDate,
+                    notes: mealNotes,
+                    rating: rating,
+                    favorite: false,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                // Upload image if exists
+                if (currentImageFile) {
+                    const imagePath = `users/${auth.currentUser.uid}/meals/${Date.now()}_${currentImageFile.name}`;
+                    const imageRef = storage.ref().child(imagePath);
+                    
+                    // Upload the image
+                    await imageRef.put(currentImageFile);
+                    
+                    // Get the download URL
+                    const imageUrl = await imageRef.getDownloadURL();
+                    
+                    // Add image info to meal data
+                    mealData.imagePath = imagePath;
+                    mealData.imageUrl = imageUrl;
+                }
+                
+                // Add to Firestore
+                const docRef = await db.collection('users')
+                    .doc(auth.currentUser.uid)
+                    .collection('meals')
+                    .add(mealData);
+                
+                // Log meal creation event
+                analytics.logEvent('add_meal', {
+                    category: mealCategory,
+                    has_image: !!currentImageFile
+                });
+                
+                // Reset form
+                this.reset();
+                document.getElementById('mealDate').valueAsDate = new Date();
+                resetImageUpload();
+                ratingInputs.forEach(input => input.checked = false);
+                updateRatingText('');
+                
+                // Show thank you animation
+                showThankYouAnimation();
+                
+                // Reload meals
+                await loadMeals();
+                
+                hideLoading();
+                
+            } catch (error) {
+                console.error("Error adding meal:", error);
+                hideLoading();
+                alert("Error saving your meal. Please try again.");
+            }
+        });
+
+        // Helper function to highlight search terms in text
+        function highlightText(text, searchTerm) {
+            if (!searchTerm || searchTerm.trim() === '') return text;
+            
+            const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.replace(regex, '<mark class="bg-yellow-200 dark:bg-yellow-700 px-1 rounded">$1</mark>');
+        }
+
+        // Toggle favorite status
+        async function toggleFavorite(e) {
+            const mealId = e.currentTarget.dataset.id;
+            const isFavorite = e.currentTarget.classList.contains('favorited');
+            
+            if (!auth.currentUser) return;
+            
+            try {
+                // Update favorite status in Firestore
+                await db.collection('users')
+                    .doc(auth.currentUser.uid)
+                    .collection('meals')
+                    .doc(mealId)
+                    .update({
+                        favorite: !isFavorite,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                
+                // Update UI
+                if (isFavorite) {
+                    e.currentTarget.classList.remove('favorited');
+                    e.currentTarget.querySelector('path').setAttribute('fill', 'none');
+                } else {
+                    e.currentTarget.classList.add('favorited');
+                    e.currentTarget.querySelector('path').setAttribute('fill', '#FF4B8B');
+                }
+                
+                // Log favorite event
+                analytics.logEvent('toggle_favorite', {
+                    action: isFavorite ? 'remove' : 'add'
+                });
+                
+                // Reload meals to update the data
+                await loadMeals();
+                
+            } catch (error) {
+                console.error("Error updating favorite status:", error);
+                alert("Error updating favorite status. Please try again.");
+            }
+        }
+
+        // Handle edit functionality
+        async function handleEdit(e) {
+            const mealId = e.target.dataset.id;
+            
+            if (!auth.currentUser) return;
+            
+            showLoading('Loading meal details...');
+            
+            try {
+                const docRef = db.collection('users')
+                    .doc(auth.currentUser.uid)
+                    .collection('meals')
+                    .doc(mealId);
+                    
+                const doc = await docRef.get();
+                
+                if (doc.exists) {
+                    const mealData = doc.data();
+                    
+                    // Switch to add tab
+                    document.getElementById('add-tab').click();
+                    
+                    // Fill form with meal data
+                    document.getElementById('mealName').value = mealData.name;
+                    document.getElementById('mealCategory').value = mealData.category;
+                    
+                    if (mealData.proteinType) {
+                        document.getElementById('proteinType').value = mealData.proteinType;
+                    }
+                    
+                    if (mealData.cuisineStyle) {
+                        document.getElementById('cuisineStyle').value = mealData.cuisineStyle;
+                    }
+                    
+                    document.getElementById('mealDate').value = mealData.date;
+                    document.getElementById('mealNotes').value = mealData.notes || '';
+                    
+                    // Set rating if exists
+                    if (mealData.rating) {
+                        const ratingInput = document.getElementById(`star${mealData.rating}`);
+                        if (ratingInput) {
+                            ratingInput.checked = true;
+                            updateRatingText(mealData.rating);
+                        }
+                    } else {
+                        // Clear rating
+                        ratingInputs.forEach(input => input.checked = false);
+                        updateRatingText('');
+                    }
+                    
+                    // Reset image first
+                    resetImageUpload();
+                    
+                    // Handle image if exists
+                    if (mealData.imageUrl) {
+                        imagePreview.src = mealData.imageUrl;
+                        currentImageData = mealData.imageUrl;
+                        imagePreviewContainer.classList.remove('hidden');
+                        imageDropContainer.classList.add('hidden');
+                        imageFileInfo.textContent = 'Existing image';
+                        removeImageBtn.classList.remove('hidden');
+                    }
+                    
+                    // Add event listener to form for updating the meal
+                    const form = document.getElementById('mealForm');
+                    
+                    // Remove previous event listeners
+                    const newForm = form.cloneNode(true);
+                    form.parentNode.replaceChild(newForm, form);
+                    
+                    newForm.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        
+                        showLoading('Updating meal...');
+                        
+                        try {
+                            const mealName = document.getElementById('mealName').value;
+                            const mealCategory = document.getElementById('mealCategory').value;
+                            const proteinType = document.getElementById('proteinType').value;
+                            const cuisineStyle = document.getElementById('cuisineStyle').value;
+                            const mealDate = document.getElementById('mealDate').value;
+                            const mealNotes = document.getElementById('mealNotes').value;
+                            const rating = parseInt(document.querySelector('input[name="rating"]:checked')?.value || 0);
+                            
+                            // Create meal object for Firestore
+                            const updatedMealData = {
+                                name: mealName,
+                                category: mealCategory,
+                                proteinType: proteinType,
+                                cuisineStyle: cuisineStyle,
+                                date: mealDate,
+                                notes: mealNotes,
+                                rating: rating,
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            };
+                            
+                            // Handle image if changed
+                            if (currentImageFile) {
+                                // Delete old image if exists
+                                if (mealData.imagePath) {
+                                    try {
+                                        await storage.ref(mealData.imagePath).delete();
+                                    } catch (error) {
+                                        console.error("Error deleting old image:", error);
+                                    }
+                                }
+                                
+                                // Upload new image
+                                const imagePath = `users/${auth.currentUser.uid}/meals/${Date.now()}_${currentImageFile.name}`;
+                                const imageRef = storage.ref().child(imagePath);
+                                
+                                // Upload the image
+                                await imageRef.put(currentImageFile);
+                                
+                                // Get the download URL
+                                const imageUrl = await imageRef.getDownloadURL();
+                                
+                                // Add image info to meal data
+                                updatedMealData.imagePath = imagePath;
+                                updatedMealData.imageUrl = imageUrl;
+                            } else if (!currentImageData && mealData.imagePath) {
+                                // If image was removed, delete from storage
+                                try {
+                                    await storage.ref(mealData.imagePath).delete();
+                                    // Remove image paths from meal data
+                                    updatedMealData.imagePath = firebase.firestore.FieldValue.delete();
+                                    updatedMealData.imageUrl = firebase.firestore.FieldValue.delete();
+                                } catch (error) {
+                                    console.error("Error deleting removed image:", error);
+                                }
+                            }
+                            
+                            // Update in Firestore
+                            await docRef.update(updatedMealData);
+                            
+                            // Log edit event
+                            analytics.logEvent('edit_meal', {
+                                category: mealCategory
+                            });
+                            
+                            // Reset form and event listeners
+                            this.reset();
+                            document.getElementById('mealDate').valueAsDate = new Date();
+                            resetImageUpload();
+                            ratingInputs.forEach(input => input.checked = false);
+                            updateRatingText('');
+                            
+                            // Re-add the original event listener
+                            const form = document.getElementById('mealForm');
+                            const newForm = form.cloneNode(true);
+                            form.parentNode.replaceChild(newForm, form);
+                            setupFormListeners();
+                            
+                            // Show thank you animation
+                            showThankYouAnimation();
+                            
+                            // Reload meals
+                            await loadMeals();
+                            
+                            hideLoading();
+                            
+                        } catch (error) {
+                            console.error("Error updating meal:", error);
+                            hideLoading();
+                            alert("Error updating your meal. Please try again.");
+                        }
+                    });
+                }
+                
+                hideLoading();
+            } catch (error) {
+                console.error("Error getting meal for edit:", error);
+                hideLoading();
+                alert("Error loading meal details. Please try again.");
+            }
+        }
+
+        // Handle rate button click
+        function handleRate(e) {
+            const mealId = e.target.dataset.id;
+            const mealName = e.target.dataset.name;
+            const currentRating = parseInt(e.target.dataset.rating) || 0;
+            
+            openRatingModal(mealId, mealName, currentRating);
+        }
+
+        // Set up form listeners
+        function setupFormListeners() {
+            const form = document.getElementById('mealForm');
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                if (!auth.currentUser) {
+                    alert('You must be signed in to add a meal.');
+                    return;
+                }
+                
+                showLoading('Saving your meal...');
+                
+                try {
+                    const mealName = document.getElementById('mealName').value;
+                    const mealCategory = document.getElementById('mealCategory').value;
+                    const proteinType = document.getElementById('proteinType').value;
+                    const cuisineStyle = document.getElementById('cuisineStyle').value;
+                    const mealDate = document.getElementById('mealDate').value;
+                    const mealNotes = document.getElementById('mealNotes').value;
+                    const rating = parseInt(document.querySelector('input[name="rating"]:checked')?.value || 0);
+                    
+                    // Create meal object for Firestore
+                    const mealData = {
+                        name: mealName,
+                        category: mealCategory,
+                        proteinType: proteinType,
+                        cuisineStyle: cuisineStyle,
+                        date: mealDate,
+                        notes: mealNotes,
+                        rating: rating,
+                        favorite: false,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                    
+                    // Upload image if exists
+                    if (currentImageFile) {
+                        const imagePath = `users/${auth.currentUser.uid}/meals/${Date.now()}_${currentImageFile.name}`;
+                        const imageRef = storage.ref().child(imagePath);
+                        
+                        // Upload the image
+                        await imageRef.put(currentImageFile);
+                        
+                        // Get the download URL
+                        const imageUrl = await imageRef.getDownloadURL();
+                        
+                        // Add image info to meal data
+                        mealData.imagePath = imagePath;
+                        mealData.imageUrl = imageUrl;
+                    }
+                    
+                    // Add to Firestore
+                    await db.collection('users')
+                        .doc(auth.currentUser.uid)
+                        .collection('meals')
+                        .add(mealData);
+                    
+                    // Log meal creation event
+                    analytics.logEvent('add_meal', {
+                        category: mealCategory,
+                        has_image: !!currentImageFile
+                    });
+                    
+                    // Reset form
+                    this.reset();
+                    document.getElementById('mealDate').valueAsDate = new Date();
+                    resetImageUpload();
+                    ratingInputs.forEach(input => input.checked = false);
+                    updateRatingText('');
+                    
+                    // Show thank you animation
+                    showThankYouAnimation();
+                    
+                    // Reload meals
+                    await loadMeals();
+                    
+                    hideLoading();
+                    
+                } catch (error) {
+                    console.error("Error adding meal:", error);
+                    hideLoading();
+                    alert("Error saving your meal. Please try again.");
+                }
+            });
+            
+            // Set up rating inputs
+            document.querySelectorAll('input[name="rating"]').forEach(input => {
+                input.addEventListener('change', function() {
+                    updateRatingText(this.value);
+                });
+            });
+            
+            // Set up image upload
+            document.getElementById('mealImage').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                
+                if (file) {
+                    if (file.size > MAX_IMAGE_SIZE) {
+                        alert('Image size exceeds 2MB limit. Please choose a smaller image.');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    currentImageFile = file;
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        imagePreview.src = event.target.result;
+                        currentImageData = event.target.result;
+                        imagePreviewContainer.classList.remove('hidden');
+                        imageDropContainer.classList.add('hidden');
+                        imageFileInfo.textContent = `${file.name} (${formatFileSize(file.size)})`;
+                        removeImageBtn.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    resetImageUpload();
+                }
+            });
+            
+            // Set up remove image button
+            document.getElementById('removeImage').addEventListener('click', function() {
+                resetImageUpload();
+            });
+        }
+
+        // Handle delete functionality
+        async function handleDelete(e) {
+            const mealId = e.target.dataset.id;
+            
+            if (!auth.currentUser) return;
+            
+            if (confirm('Are you sure you want to delete this meal?')) {
+                showLoading('Deleting meal...');
+                
+                try {
+                    const docRef = db.collection('users')
+                        .doc(auth.currentUser.uid)
+                        .collection('meals')
+                        .doc(mealId);
+                        
+                    const doc = await docRef.get();
+                    
+                    if (doc.exists) {
+                        const mealData = doc.data();
+                        
+                        // Delete image if exists
+                        if (mealData.imagePath) {
+                            try {
+                                await storage.ref(mealData.imagePath).delete();
+                            } catch (error) {
+                                console.error("Error deleting image:", error);
+                            }
+                        }
+                        
+                        // Delete document from Firestore
+                        await docRef.delete();
+                        
+                        // Log delete event
+                        analytics.logEvent('delete_meal');
+                        
+                        // Reload meals
+                        await loadMeals();
+                        
+                        hideLoading();
+                    }
+                } catch (error) {
+                    console.error("Error deleting meal:", error);
+                    hideLoading();
+                    alert("Error deleting your meal. Please try again.");
+                }
+            }
+        }
+
+        // Render favorites
+        function renderFavorites() {
+            const favoritesList = document.getElementById('favoritesList');
+            const favoriteCount = document.getElementById('favoriteCount');
+            const sortBy = document.getElementById('favoritesSort').value;
+            
+            // Filter for favorites
+            const favorites = [...meals].filter(meal => meal.favorite);
+            
+            // Update count
+            favoriteCount.textContent = favorites.length;
+            document.getElementById('totalFavorites').textContent = favorites.length;
+            
+            // Sort favorites
+            favorites.sort((a, b) => {
+                switch (sortBy) {
+                    case 'dateDesc':
+                        return new Date(b.date) - new Date(a.date);
+                    case 'dateAsc':
+                        return new Date(a.date) - new Date(b.date);
+                    case 'nameAsc':
+                        return a.name.localeCompare(b.name);
+                    case 'nameDesc':
+                        return b.name.localeCompare(a.name);
+                    case 'ratingDesc':
+                        return (b.rating || 0) - (a.rating || 0);
+                    case 'ratingAsc':
+                        return (a.rating || 0) - (b.rating || 0);
+                    default:
+                        return new Date(b.date) - new Date(a.date);
+                }
+            });
+            
+            // Clear the list
+            favoritesList.innerHTML = '';
+            
+            // Show message if no favorites
+            if (favorites.length === 0) {
+                favoritesList.innerHTML = '<div class="text-center py-4 text-gray-500 italic col-span-3">No favorite meals yet. Add meals to your favorites!</div>';
+                return;
+            }
+            
+            // Render favorites
+            favorites.forEach(meal => {
+                const card = document.createElement('div');
+                card.className = 'bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow';
+                
+                // Format rating display
+                const ratingDisplay = meal.rating ? 
+                    `<div class="text-yellow-500 mb-2">${'★'.repeat(meal.rating)}${'☆'.repeat(5 - meal.rating)}</div>` : 
+                    '<div class="text-gray-400 mb-2 text-sm italic">Not rated</div>';
+                
+                // Format date
+                const formattedDate = new Date(meal.date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                
+                card.innerHTML = `
+                    <div class="relative">
+                        ${meal.image ? `
+                            <div class="h-48 overflow-hidden bg-gray-100 dark:bg-gray-800">
+                                <img src="${meal.image}" alt="${meal.name}" class="w-full h-full object-cover">
+                            </div>
+                        ` : `
+                            <div class="h-48 flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                        `}
+                        <button data-id="${meal.id}" class="heart-icon favorited absolute top-2 right-2 bg-white dark:bg-gray-700 rounded-full p-1 shadow">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="#FF4B8B">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-lg font-medium mb-1">${meal.name}</h3>
+                        <div class="flex flex-wrap gap-1 mb-2">
+                            <span class="inline-block bg-purple-100 text-purple-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-purple-900 dark:text-purple-300">${meal.category}</span>
+                            ${meal.proteinType ? `<span class="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">${meal.proteinType}</span>` : ''}
+                            ${meal.cuisineStyle ? `<span class="inline-block bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-green-900 dark:text-green-300">${meal.cuisineStyle}</span>` : ''}
+                        </div>
+                        ${ratingDisplay}
+                        <div class="text-gray-500 dark:text-gray-400 text-sm mb-2">${formattedDate}</div>
+                        <div class="flex space-x-2">
+                            <button 
+                                data-id="${meal.id}" 
+                                class="edit-meal text-xs md:text-sm bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:hover:bg-blue-800 dark:text-blue-300 flex-1">
+                                Edit
+                            </button>
+                            <button 
+                                data-id="${meal.id}" 
+                                data-name="${meal.name}"
+                                data-rating="${meal.rating || 0}"
+                                class="rate-meal text-xs md:text-sm bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:hover:bg-yellow-800 dark:text-yellow-300 flex-1">
+                                ${meal.rating ? 'Rate Again' : 'Rate'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                favoritesList.appendChild(card);
+                
+                // Add event listeners
+                card.querySelector('.heart-icon').addEventListener('click', toggleFavorite);
+                card.querySelector('.edit-meal').addEventListener('click', handleEdit);
+                card.querySelector('.rate-meal').addEventListener('click', handleRate);
+            });
+        }
+        
+        // Listen for favorites sort change
+        document.getElementById('favoritesSort').addEventListener('change', function() {
+            renderFavorites();
+        });
+
+        // Filter and search listeners
+        document.getElementById('filterCategory').addEventListener('change', function() {
+            applyFilters();
+        });
+        
+        document.getElementById('filterProtein').addEventListener('change', function() {
+            applyFilters();
+        });
+        
+        document.getElementById('filterCuisine').addEventListener('change', function() {
+            applyFilters();
+        });
+        
+        document.getElementById('filterRating').addEventListener('change', function() {
+            applyFilters();
+        });
+
+        document.getElementById('mealSearch').addEventListener('input', function() {
+            applyFilters();
+        });
+        
+        // Add event listeners for radio buttons
+        document.querySelectorAll('input[name="searchType"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                applyFilters();
+            });
+        });
+        
+        // Apply all filters and render meals
+        function applyFilters() {
+            const categoryFilter = document.getElementById('filterCategory').value;
+            const proteinFilter = document.getElementById('filterProtein').value;
+            const cuisineFilter = document.getElementById('filterCuisine').value;
+            const ratingFilter = document.getElementById('filterRating').value;
+            const searchTerm = document.getElementById('mealSearch').value;
+            
+            renderMealsWithFilters(categoryFilter, proteinFilter, cuisineFilter, ratingFilter, searchTerm);
+        }
+        
+        // Format rating for display
+        function formatRating(rating) {
+            if (!rating) return '';
+            
+            return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+        }
+        
+        // Render meals with multiple filters
+        function renderMealsWithFilters(categoryFilter = 'All', proteinFilter = 'All', cuisineFilter = 'All', ratingFilter = 'All', searchTerm = '') {
+            const mealListElement = document.getElementById('mealList');
+            const searchResultsDiv = document.getElementById('searchResults');
+            const searchResultsText = document.getElementById('searchResultsText');
+            mealListElement.innerHTML = '';
+            
+            // Get search type
+            const searchType = document.querySelector('input[name="searchType"]:checked').value;
+            
+            // Apply multiple filters
+            const filteredMeals = meals.filter(meal => {
+                // Meal time/category filter
+                const matchesCategory = categoryFilter === 'All' || meal.category === categoryFilter;
+                
+                // Protein type filter
+                const matchesProtein = proteinFilter === 'All' || 
+                    (meal.proteinType && meal.proteinType === proteinFilter);
+                
+                // Cuisine style filter
+                const matchesCuisine = cuisineFilter === 'All' || 
+                    (meal.cuisineStyle && meal.cuisineStyle === cuisineFilter);
+                
+                // Rating filter
+                const matchesRating = ratingFilter === 'All' || 
+                    (ratingFilter === '0' && !meal.rating) || 
+                    (meal.rating === parseInt(ratingFilter));
+                
+                // Search term filter
+                let matchesSearch = false;
+                if (searchTerm === '') {
+                    matchesSearch = true;
+                } else {
+                    const lowerSearchTerm = searchTerm.toLowerCase();
+                    if (searchType === 'all') {
+                        matchesSearch = meal.name.toLowerCase().includes(lowerSearchTerm) || 
+                                      meal.notes.toLowerCase().includes(lowerSearchTerm);
+                    } else if (searchType === 'name') {
+                        matchesSearch = meal.name.toLowerCase().includes(lowerSearchTerm);
+                    } else if (searchType === 'recipe') {
+                        matchesSearch = meal.notes.toLowerCase().includes(lowerSearchTerm);
+                    }
+                }
+                
+                // All conditions must be true
+                return matchesCategory && matchesProtein && matchesCuisine && matchesRating && matchesSearch;
+            });
+            
+            // Show search results message if there's a search term or active filters
+            const hasActiveFilters = categoryFilter !== 'All' || proteinFilter !== 'All' || 
+                                    cuisineFilter !== 'All' || ratingFilter !== 'All' || 
+                                    searchTerm !== '';
+            
+            if (hasActiveFilters) {
+                searchResultsDiv.classList.remove('hidden');
+                
+                let filterText = [];
+                if (searchTerm) filterText.push(`matching "${searchTerm}"`);
+                if (categoryFilter !== 'All') filterText.push(`in ${categoryFilter}`);
+                if (proteinFilter !== 'All') filterText.push(`with ${proteinFilter}`);
+                if (cuisineFilter !== 'All') filterText.push(`in ${cuisineFilter} style`);
+                if (ratingFilter !== 'All') {
+                    if (ratingFilter === '0') {
+                        filterText.push('not rated');
+                    } else {
+                        filterText.push(`rated ${ratingFilter} stars`);
+                    }
+                }
+                
+                searchResultsText.textContent = `Found ${filteredMeals.length} meal${filteredMeals.length !== 1 ? 's' : ''} ${filterText.join(' ')}`;
+            } else {
+                searchResultsDiv.classList.add('hidden');
+            }
+            
+            if (filteredMeals.length === 0) {
+                mealListElement.innerHTML = '<div class="text-center py-4 text-gray-500 italic">No meals found with the current filters.</div>';
+                return;
+            }
+            
+            // Group meals by date
+            const mealsByDate = {};
+            filteredMeals.forEach(meal => {
+                if (!mealsByDate[meal.date]) {
+                    mealsByDate[meal.date] = [];
+                }
+                mealsByDate[meal.date].push(meal);
+            });
+            
+            // Render meals grouped by date
+            Object.keys(mealsByDate).sort().reverse().forEach(date => {
+                const dateHeading = document.createElement('div');
+                dateHeading.className = 'bg-gray-100 dark:bg-gray-700 px-4 py-2 font-medium my-2 mobile-py-2 mobile-px-2';
+                
+                // Format date for display
+                const formattedDate = new Date(date).toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                dateHeading.textContent = formattedDate;
+                mealListElement.appendChild(dateHeading);
+                
+                mealsByDate[date].forEach(meal => {
+                    // Apply highlighting based on search
+                    const highlightedName = highlightText(meal.name, searchTerm);
+                    const highlightedNotes = highlightText(meal.notes, searchTerm);
+                    
+                    const mealItem = document.createElement('div');
+                    mealItem.className = 'py-4 px-4 mobile-py-2 mobile-px-2';
+                    
+                    // Format rating display
+                    const ratingDisplay = meal.rating ? 
+                        `<div class="text-yellow-500 mt-1">${formatRating(meal.rating)}</div>` : 
+                        '<div class="text-gray-400 mt-1 text-sm italic">Not rated</div>';
+                    
+                    // Structure for meal with/without image
+                    if (meal.image) {
+                        mealItem.innerHTML = `
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="w-full md:w-1/3 lg:w-1/4 aspect-square overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                    <img src="${meal.image}" alt="${meal.name}" class="object-cover w-full h-full rounded-lg" loading="lazy">
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-start justify-between">
+                                        <h3 class="text-lg font-medium">${highlightedName}</h3>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ml-2 heart-icon ${meal.favorite ? 'favorited' : ''}" data-id="${meal.id}" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="${meal.favorite ? '#FF4B8B' : 'none'}">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                                        </svg>
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-2 mb-2">
+                                        <span class="inline-block bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-purple-900 dark:text-purple-300">${meal.category}</span>
+                                        ${meal.proteinType ? `<span class="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">${meal.proteinType}</span>` : ''}
+                                        ${meal.cuisineStyle ? `<span class="inline-block bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">${meal.cuisineStyle}</span>` : ''}
+                                    </div>
+                                    ${ratingDisplay}
+                                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-3">${highlightedNotes}</p>
+                                    <div class="flex flex-wrap gap-2">
+                                        <button 
+                                            data-id="${meal.id}" 
+                                            data-name="${meal.name}"
+                                            data-rating="${meal.rating || 0}"
+                                            class="rate-meal text-xs md:text-sm bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:hover:bg-yellow-800 dark:text-yellow-300">
+                                            ${meal.rating ? 'Rate Again' : 'Rate'}
+                                        </button>
+                                        <button 
+                                            data-id="${meal.id}" 
+                                            class="edit-meal text-xs md:text-sm bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:hover:bg-blue-800 dark:text-blue-300">
+                                            Edit
+                                        </button>
+                                        <button 
+                                            data-id="${meal.id}" 
+                                            class="delete-meal text-xs md:text-sm bg-red-100 hover:bg-red-200 text-red-800 font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:hover:bg-red-800 dark:text-red-300">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        mealItem.innerHTML = `
+                            <div>
+                                <div class="flex items-start justify-between">
+                                    <h3 class="text-lg font-medium">${highlightedName}</h3>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ml-2 heart-icon ${meal.favorite ? 'favorited' : ''}" data-id="${meal.id}" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="${meal.favorite ? '#FF4B8B' : 'none'}">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                                    </svg>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2 mb-2">
+                                    <span class="inline-block bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-purple-900 dark:text-purple-300">${meal.category}</span>
+                                    ${meal.proteinType ? `<span class="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">${meal.proteinType}</span>` : ''}
+                                    ${meal.cuisineStyle ? `<span class="inline-block bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">${meal.cuisineStyle}</span>` : ''}
+                                </div>
+                                ${ratingDisplay}
+                                <p class="text-gray-600 dark:text-gray-400 text-sm mb-3">${highlightedNotes}</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <button 
+                                        data-id="${meal.id}" 
+                                        data-name="${meal.name}"
+                                        data-rating="${meal.rating || 0}"
+                                        class="rate-meal text-xs md:text-sm bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:hover:bg-yellow-800 dark:text-yellow-300">
+                                        ${meal.rating ? 'Rate Again' : 'Rate'}
+                                    </button>
+                                    <button 
+                                        data-id="${meal.id}" 
+                                        class="edit-meal text-xs md:text-sm bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:hover:bg-blue-800 dark:text-blue-300">
+                                        Edit
+                                    </button>
+                                    <button 
+                                        data-id="${meal.id}" 
+                                        class="delete-meal text-xs md:text-sm bg-red-100 hover:bg-red-200 text-red-800 font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:hover:bg-red-800 dark:text-red-300">
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    mealListElement.appendChild(mealItem);
+                });
+            });
+            
+            // Add event listeners for buttons
+            document.querySelectorAll('.edit-meal').forEach(button => {
+                button.addEventListener('click', handleEdit);
+            });
+            
+            document.querySelectorAll('.delete-meal').forEach(button => {
+                button.addEventListener('click', handleDelete);
+            });
+            
+            document.querySelectorAll('.rate-meal').forEach(button => {
+                button.addEventListener('click', handleRate);
+            });
+            
+            document.querySelectorAll('.heart-icon').forEach(icon => {
+                icon.addEventListener('click', toggleFavorite);
+            });
+        }
+
+        // Statistics functions
+        let categoryChart, timeChart, ratingChart;
+
+        function updateStats() {
+            const period = document.getElementById('statsPeriod').value;
+            let filteredMeals = [...meals];
+            
+            // Filter meals based on selected period
+            if (period !== 'all') {
+                const today = new Date();
+                const dateThreshold = new Date();
+                
+                if (period === 'week') {
+                    // Start from Monday of current week
+                    const day = today.getDay();
+                    const diff = today.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Sunday
+                    dateThreshold.setDate(diff);
+                } else if (period === 'month') {
+                    // Start from first day of current month
+                    dateThreshold.setDate(1);
+                }
+                
+                dateThreshold.setHours(0, 0, 0, 0);
+                filteredMeals = meals.filter(meal => new Date(meal.date) >= dateThreshold);
+            }
+            
+            // Update category chart
+            updateCategoryChart(filteredMeals);
+            
+            // Update time chart
+            updateTimeChart(filteredMeals, period);
+            
+            // Update rating chart
+            updateRatingChart(filteredMeals);
+            
+            // Update summary statistics
+            updateSummaryStats(filteredMeals, period);
+        }
+
+        function updateCategoryChart(filteredMeals) {
+            // Count meals by category
+            const categoryCounts = {};
+            filteredMeals.forEach(meal => {
+                categoryCounts[meal.category] = (categoryCounts[meal.category] || 0) + 1;
+            });
+            
+            const categories = Object.keys(categoryCounts);
+            const counts = Object.values(categoryCounts);
+            
+            // Set up category colors
+            const categoryColors = {
+                'Breakfast': 'rgba(255, 99, 132, 0.7)',
+                'Lunch': 'rgba(54, 162, 235, 0.7)',
+                'Dinner': 'rgba(255, 206, 86, 0.7)',
+                'Snack': 'rgba(75, 192, 192, 0.7)',
+                'Dessert': 'rgba(153, 102, 255, 0.7)',
+                'Other': 'rgba(255, 159, 64, 0.7)'
+            };
+            
+            const colors = categories.map(cat => categoryColors[cat] || 'rgba(128, 128, 128, 0.7)');
+            
+            // Create or update chart
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            
+            if (categoryChart) {
+                categoryChart.destroy();
+            }
+            
+            categoryChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: colors,
+                        borderColor: colors.map(color => color.replace('0.7', '1')),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: isDarkMode() ? '#e5e7eb' : '#1f2937',
+                                padding: 15
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTimeChart(filteredMeals, period) {
+            let labels, dateFormat;
+            
+            if (period === 'week') {
+                labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                dateFormat = date => {
+                    const day = new Date(date).getDay();
+                    return labels[day === 0 ? 6 : day - 1]; // Adjust for Sunday
+                };
+            } else if (period === 'month') {
+                // Get all days in current month
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = today.getMonth();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                
+                labels = Array.from({length: daysInMonth}, (_, i) => i + 1);
+                dateFormat = date => new Date(date).getDate();
+            } else {
+                // Group by month for all time
+                labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                dateFormat = date => labels[new Date(date).getMonth()];
+            }
+            
+            // Count meals by time period
+            const timeData = {};
+            labels.forEach(label => {
+                timeData[label] = 0;
+            });
+            
+            filteredMeals.forEach(meal => {
+                const label = dateFormat(meal.date);
+                timeData[label] = (timeData[label] || 0) + 1;
+            });
+            
+            // Create dataset
+            const data = labels.map(label => timeData[label] || 0);
+            
+            // Create or update chart
+            const ctx = document.getElementById('timeChart').getContext('2d');
+            
+            if (timeChart) {
+                timeChart.destroy();
+            }
+            
+            timeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Meals',
+                        data: data,
+                        backgroundColor: 'rgba(93, 92, 222, 0.7)',
+                        borderColor: 'rgba(93, 92, 222, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                color: isDarkMode() ? '#e5e7eb' : '#1f2937'
+                            },
+                            grid: {
+                                color: isDarkMode() ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: isDarkMode() ? '#e5e7eb' : '#1f2937'
+                            },
+                            grid: {
+                                color: isDarkMode() ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: isDarkMode() ? '#e5e7eb' : '#1f2937'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateRatingChart(filteredMeals) {
+            // Count meals by rating
+            const ratingCounts = [0, 0, 0, 0, 0, 0]; // [not rated, 1-star, 2-star, 3-star, 4-star, 5-star]
+            
+            filteredMeals.forEach(meal => {
+                const rating = meal.rating || 0;
+                ratingCounts[rating]++;
+            });
+            
+            const labels = ['Not Rated', '★', '★★', '★★★', '★★★★', '★★★★★'];
+            
+            // Create or update chart
+            const ctx = document.getElementById('ratingChart').getContext('2d');
+            
+            if (ratingChart) {
+                ratingChart.destroy();
+            }
+            
+            const colors = [
+                'rgba(128, 128, 128, 0.7)', // Not rated - Gray
+                'rgba(255, 99, 132, 0.7)',  // 1 star - Red
+                'rgba(255, 159, 64, 0.7)',  // 2 stars - Orange
+                'rgba(255, 205, 86, 0.7)',  // 3 stars - Yellow
+                'rgba(75, 192, 192, 0.7)',  // 4 stars - Teal
+                'rgba(54, 162, 235, 0.7)'   // 5 stars - Blue
+            ];
+            
+            ratingChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Meals',
+                        data: ratingCounts,
+                        backgroundColor: colors,
+                        borderColor: colors.map(color => color.replace('0.7', '1')),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                color: isDarkMode() ? '#e5e7eb' : '#1f2937'
+                            },
+                            grid: {
+                                color: isDarkMode() ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: isDarkMode() ? '#e5e7eb' : '#1f2937'
+                            },
+                            grid: {
+                                color: isDarkMode() ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateSummaryStats(filteredMeals, period) {
+            // Total meals
+            document.getElementById('totalMeals').textContent = filteredMeals.length;
+            
+            // Most common category
+            const categoryCount = {};
+            filteredMeals.forEach(meal => {
+                categoryCount[meal.category] = (categoryCount[meal.category] || 0) + 1;
+            });
+            
+            let mostCommonCategory = 'None';
+            let maxCount = 0;
+            
+            Object.entries(categoryCount).forEach(([category, count]) => {
+                if (count > maxCount) {
+                    mostCommonCategory = category;
+                    maxCount = count;
+                }
+            });
+            
+            document.getElementById('mostCommon').textContent = mostCommonCategory;
+            
+            // Average rating
+            const ratedMeals = filteredMeals.filter(meal => meal.rating > 0);
+            let avgRating = 'N/A';
+            
+            if (ratedMeals.length > 0) {
+                const totalRating = ratedMeals.reduce((sum, meal) => sum + meal.rating, 0);
+                avgRating = (totalRating / ratedMeals.length).toFixed(1);
+            }
+            
+            document.getElementById('avgRating').textContent = avgRating;
+            
+            // Total favorites
+            const favorites = filteredMeals.filter(meal => meal.favorite);
+            document.getElementById('totalFavorites').textContent = favorites.length;
+        }
+
+        // Dark mode detection
+        function isDarkMode() {
+            return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+
+        // Initialize app
+        setupFormListeners();
+        
+        // Setup stats tab event listener
+        document.getElementById('stats-tab').addEventListener('click', updateStats);
+        document.getElementById('statsPeriod').addEventListener('change', updateStats);
+        
+        // Handle color theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            updateStats();
+        });
+    </script>
+</body>
+</html>
